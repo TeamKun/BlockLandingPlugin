@@ -4,3 +4,6 @@ main: net.kunmc.lab.blocklandingplugin.BlockLandingPlugin
 api-version: 1.16
 authors: [sudo]
 description: 建材落下プラグイン
+commands:
+    lstart:
+        description: 建材落下ゲームを始めます。
