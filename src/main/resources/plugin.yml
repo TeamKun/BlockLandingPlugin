@@ -1,0 +1,6 @@
+name: BlockLandingPlugin
+version: ${project.version}
+main: net.kunmc.lab.blocklandingplugin.BlockLandingPlugin
+api-version: 1.16
+authors: [sudo]
+description: 建材落下プラグイン
