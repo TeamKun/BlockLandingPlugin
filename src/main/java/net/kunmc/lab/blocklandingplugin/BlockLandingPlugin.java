@@ -1,6 +1,5 @@
 package net.kunmc.lab.blocklandingplugin;
 
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -9,12 +8,12 @@ import org.bukkit.entity.Player;
 
 public final class BlockLandingPlugin extends JavaPlugin {
 
-    int startY;
-
     @Override
     public void onEnable() {
         FileConfiguration config = getConfig();
-        startY = Integer.parseInt(config.getString("startY"));
+        ConfigData configData = ConfigData.getInstance();
+        int startY = Integer.parseInt(config.getString("startY"));
+        configData.setStartY(startY);
     }
 
     @Override
@@ -26,7 +25,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
         if (sender instanceof Player) {
             GameManager gameManager = new GameManager(this);
-            gameManager.start((Player) sender, startY);
+            gameManager.start((Player) sender);
         }
         return false;
     }

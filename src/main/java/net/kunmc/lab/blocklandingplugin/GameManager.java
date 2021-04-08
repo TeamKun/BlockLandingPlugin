@@ -22,12 +22,13 @@ public class GameManager {
     /**
      * @param player
      */
-    public void start(Player player, int startY) {
+    public void start(Player player) {
+        ConfigData configData = ConfigData.getInstance();
 
         for (int i = 0; i < 5; i++) {
             //初期ブロック設定
             Location location = player.getLocation();
-            location.setY(location.getY() + startY);
+            location.setY(location.getY() + configData.getStartY());
             Block block = location.getBlock();
             blockList.add(new LandingBlockTask(new BlockLandingRunnable(player, block, i, blockLandingPlugin),Material.ACACIA_WOOD));
         }
