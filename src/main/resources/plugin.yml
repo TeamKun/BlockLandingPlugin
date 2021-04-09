@@ -7,3 +7,6 @@ description: 建材落下プラグイン
 commands:
     lstart:
         description: 建材落下ゲームを始めます。
+
+    lready:
+        description: 自分の下のチェストの中身をゲームに使います。
