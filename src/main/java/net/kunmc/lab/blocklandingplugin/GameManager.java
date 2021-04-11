@@ -29,15 +29,16 @@ public class GameManager {
      * @param player
      */
     public void start(Player player, HashMap<Integer, ItemStack> items) {
+
         ConfigData configData = ConfigData.getInstance();
         int count = 0;
         for (ItemStack item : items.values()) {
-            for(int i = 0 ; i < item.getAmount() ; i ++){
+            for (int i = 0; i < item.getAmount(); i++) {
                 //初期ブロック設定
                 Location location = player.getLocation();
                 location.setY(location.getY() + configData.getStartY());
                 Block block = location.getBlock();
-                blockList.add(new LandingBlockTask(new BlockLandingRunnable(blockLandingPlugin,player, block, count++),item.getType()));
+                blockList.add(new LandingBlockTask(new BlockLandingRunnable(blockLandingPlugin, player, block, count++), item.getType()));
             }
         }
         blockList.get(0).getBlockLandingRunnable().runTaskTimer(blockLandingPlugin, 0, 20);

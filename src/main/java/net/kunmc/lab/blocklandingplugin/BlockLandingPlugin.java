@@ -1,5 +1,6 @@
 package net.kunmc.lab.blocklandingplugin;
 
+import net.kunmc.lab.blocklandingplugin.message.ErrorMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -41,49 +42,55 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
         //ゲーム設定コマンド
         final String GAME_SET = "lready";
+        try {
+            switch (cmd.getName().toLowerCase()) {
+                case GAME_START:
+                    //todo 将来的にはsetコマンドで開始プレイヤーを設定するのでこの判定は不要
+                    if (sender instanceof Player) {
+                        GameManager gameManager = new GameManager(this);
+                        gameManager.start((Player) sender, temp);
+                    }
+                    break;
+                case GAME_SET:
+                    if (!(sender instanceof Player)) {
+                        //todo エラーメッセージを適切な対象に送る
+                        Bukkit.getServer().broadcastMessage(ErrorMessage.CMD_SENDER_ERROR);
+                        return false;
+                    }
+                    //プレイヤーの足元のブロックを取得
+                    Location location = ((Player) sender).getLocation();
+                    location.add(0, -0.1, 0);
+                    Block footBlock = location.getBlock();
+                    if (footBlock.getType() != Material.CHEST) {
+                        //todo エラーメッセージを適切な対象に送る
+                        Bukkit.getServer().broadcastMessage(ErrorMessage.NOT_CHEST);
+                        return false;
+                    }
+                    //チェストであれば、中身を取得してゲームに設定する
+                    Chest chest = (Chest) footBlock.getState();
+                    Inventory inv = chest.getInventory();
 
-        switch (cmd.getName().toLowerCase()) {
-            case GAME_START:
-                //todo 将来的にはsetコマンドで開始プレイヤーを設定するのでこの判定は不要
-                if (sender instanceof Player) {
+                    temp = getItems(inv);
+                    int sum = 0;
+                    for (ItemStack item : temp.values()) {
+                        sum += item.getAmount();
+                    }
                     GameManager gameManager = new GameManager(this);
-                    gameManager.start((Player) sender, temp);
-                }
-                break;
-            case GAME_SET:
-                if (!(sender instanceof Player)) {
-                    //todo エラーメッセージ　プレイヤーではありません的な
-                    return false;
-                }
-                //プレイヤーの足元のブロックを取得
-                Location location = ((Player) sender).getLocation();
-                location.add(0,-0.1,0);
-                Block footBlock = location.getBlock();
-                if (footBlock.getType() != Material.CHEST) {
-                    //todo エラーメッセージ　足元がチェストではありません的な
-                    return false;
-                }
-                //チェストであれば、中身を取得してゲームに設定する
-                Chest chest = (Chest) footBlock.getState();
-                Inventory inv = chest.getInventory();
 
-                temp = getItems(inv);
-                int sum = 0;
-                for(ItemStack item : temp.values()) {
-                    sum += item.getAmount();
-                }
-                GameManager gameManager = new GameManager(this);
-
-                Bukkit.getServer().broadcastMessage("チェストの中身を読み込みました（" + sum + "個）");
-                break;
+                    Bukkit.getServer().broadcastMessage("チェストの中身を読み込みました（" + sum + "個）");
+                    break;
+            }
+        } catch (Exception e) {
+            Bukkit.getServer().broadcastMessage(e.getMessage());
         }
+
         return false;
     }
 
     /**
      * インベントリからアイテムを重複しない形で取得
      */
-    private HashMap<Integer, ItemStack> getItems(Inventory inv){
+    private HashMap<Integer, ItemStack> getItems(Inventory inv) {
         HashMap<Integer, ItemStack> items = new HashMap<>();
         for (int i = 0, size = inv.getSize(); i < size; ++i) {
             // アイテム取得
