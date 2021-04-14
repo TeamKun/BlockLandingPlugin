@@ -4,6 +4,7 @@ import net.kunmc.lab.blocklandingplugin.message.ErrorMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
@@ -13,10 +14,18 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.Team;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 public final class BlockLandingPlugin extends JavaPlugin {
+
+    private List<GameManager> gameManagerList = new ArrayList<>();
 
     //todo GameManagerに持たせる、GameManegerはここで複数管理する
     private HashMap<Integer, ItemStack> temp;
@@ -42,12 +51,18 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
         //ゲーム設定コマンド
         final String GAME_SET = "lready";
+
+        //チーム設定コマンド
+        final String GAME_TEAM_SET = "lteamready";
+
         try {
             switch (cmd.getName().toLowerCase()) {
                 case GAME_START:
                     //todo 将来的にはsetコマンドで開始プレイヤーを設定するのでこの判定は不要
-                    if (sender instanceof Player) {
-                        GameManager gameManager = new GameManager(this);
+                    if (gameManagerList.size() == 0) {
+                        Bukkit.getServer().broadcastMessage(ErrorMessage.CANT_START);
+                    }
+                    for(GameManager gameManager : gameManagerList){
                         gameManager.start((Player) sender, temp);
                     }
                     break;
@@ -75,9 +90,16 @@ public final class BlockLandingPlugin extends JavaPlugin {
                     for (ItemStack item : temp.values()) {
                         sum += item.getAmount();
                     }
-                    GameManager gameManager = new GameManager(this);
-
                     Bukkit.getServer().broadcastMessage("チェストの中身を読み込みました（" + sum + "個）");
+                    break;
+                case GAME_TEAM_SET:
+                    ScoreboardManager manager = Bukkit.getScoreboardManager();
+                    Scoreboard board = manager.getMainScoreboard();
+                    Set<Team> teams = board.getTeams();
+                    for (Team targetTeam : teams) {
+                        GameManager gameManager = new GameManager(this, targetTeam);
+                        gameManagerList.add(gameManager);
+                    }
                     break;
             }
         } catch (Exception e) {

@@ -10,3 +10,6 @@ commands:
 
     lready:
         description: 自分の下のチェストの中身をゲームに使います。
+
+    lteamready:
+        description: チームを設定します。

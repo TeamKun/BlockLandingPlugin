@@ -2,6 +2,7 @@ package net.kunmc.lab.blocklandingplugin;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -21,7 +22,6 @@ public class BlockLandingRunnable extends BukkitRunnable {
     Player player;
     Block block;
     int index;
-    int count = 0;
     Plugin plugin;
 
     public BlockLandingRunnable(Plugin plugin, Player player, Block block, int index) {
@@ -45,24 +45,22 @@ public class BlockLandingRunnable extends BukkitRunnable {
         nextBlock.setType(GameManager.blockList.get(index).getMaterial());
         block.setType(Material.AIR);
         block = nextBlock;
-        BoundingBox box = block.getBoundingBox();
-        count++;
 
-        //todo 当たり判定
+        //当り判定確認
         if (isHittingNextBlock(block)) {
+            //次がある場合
             if (index + 1 < GameManager.blockList.size()) {
                 GameManager.blockList.get(index + 1).getBlockLandingRunnable().runTaskTimer(plugin, 0, 20);
+            }else{
+                player.sendTitle("完成！","",10,80,10);
             }
+            location.getWorld().spawnParticle(
+                    Particle.SPELL_MOB,
+                    location,
+                    10
+            );
             cancel();
         }
-        /*
-        if (count >= 10) {
-            if (index + 1 < GameManager.blockList.size()) {
-                GameManager.blockList.get(index + 1).getBlockLandingRunnable().runTaskTimer(plugin, 0, 20);
-            }
-            cancel();
-        }
-        */
     }
 
     /**
@@ -71,12 +69,13 @@ public class BlockLandingRunnable extends BukkitRunnable {
     private boolean isHittingNextBlock(Block block) {
         Location location = block.getLocation();
         List<Block> blockList = new ArrayList<Block>();
-        blockList.add(location.add(0, -1, 0).getBlock());
-        //blockList.add(location.add(0, 1, 0).getBlock());
-        blockList.add(location.add(-1, 0, 0).getBlock());
-        blockList.add(location.add(1, 0, 0).getBlock());
-        //blockList.add(location.add(0, 0, -1).getBlock());
-        //blockList.add(location.add(0, 0, 1).getBlock());
+
+        blockList.add(location.clone().add(0, -1, 0).getBlock());
+        blockList.add(location.clone().add(0, 1, 0).getBlock());
+        blockList.add(location.clone().add(-1, 0, 0).getBlock());
+        blockList.add(location.clone().add(1, 0, 0).getBlock());
+        blockList.add(location.clone().add(0, 0, -1).getBlock());
+        blockList.add(location.clone().add(0, 0, 1).getBlock());
 
         for (Block myBlock : blockList) {
             if (myBlock.getType() != Material.AIR) {
