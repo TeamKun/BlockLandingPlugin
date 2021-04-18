@@ -8,10 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Team;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 1チェスト単位で管理
@@ -28,15 +25,14 @@ public class GameManager {
 
     public static List<LandingBlockTask> blockList = new ArrayList<>();
 
-    /**
-     * @param player
-     */
-    public void start(Player player, HashMap<Integer, ItemStack> items) {
+    public Map<Integer, ItemStack> itemList = new HashMap<>();
+
+    public void start(Player player) {
         blockList = new ArrayList<>();
         Set<OfflinePlayer> teamPlayers = team.getPlayers();
         ConfigData configData = ConfigData.getInstance();
         int count = 0;
-        for (ItemStack item : items.values()) {
+        for (ItemStack item : itemList.values()) {
             for (int i = 0; i < item.getAmount(); i++) {
                 //初期ブロック設定
                 Location location = player.getLocation();
@@ -47,6 +43,11 @@ public class GameManager {
         }
 
         blockList.get(0).getBlockLandingRunnable().runTaskTimer(blockLandingPlugin, 0, 20);
+    }
+
+    public GameManager setItemList(Map<Integer, ItemStack> itemList) {
+        this.itemList = itemList;
+        return this;
     }
 
 }

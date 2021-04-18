@@ -18,17 +18,13 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class BlockLandingPlugin extends JavaPlugin {
 
-    private List<GameManager> gameManagerList = new ArrayList<>();
-
-    //todo GameManagerに持たせる、GameManegerはここで複数管理する
-    private HashMap<Integer, ItemStack> temp;
+    //teamname,gameManager
+    private Map<String, GameManager> gameManagerList = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -43,6 +39,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
         // Plugin shutdown logic
     }
 
+    //todo resetコマンド作る？
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 
@@ -58,13 +55,11 @@ public final class BlockLandingPlugin extends JavaPlugin {
         try {
             switch (cmd.getName().toLowerCase()) {
                 case GAME_START:
-                    //todo 将来的にはsetコマンドで開始プレイヤーを設定するのでこの判定は不要
                     if (gameManagerList.size() == 0) {
                         Bukkit.getServer().broadcastMessage(ErrorMessage.CANT_START);
                     }
-                    for(GameManager gameManager : gameManagerList){
-                        gameManager.start((Player) sender, temp);
-                    }
+                    gameManagerList.forEach((k, v) -> v.start((Player) sender));
+
                     break;
                 case GAME_SET:
                     if (!(sender instanceof Player)) {
@@ -72,6 +67,19 @@ public final class BlockLandingPlugin extends JavaPlugin {
                         Bukkit.getServer().broadcastMessage(ErrorMessage.CMD_SENDER_ERROR);
                         return false;
                     }
+                    if (args.length != 1) {
+                        //todo エラーメッセージを適切な対象に送る
+                        Bukkit.getServer().broadcastMessage(ErrorMessage.NO_TEAM_CMD);
+                        return false;
+                    }
+                    String teamName = args[0];
+                    boolean test = gameManagerList.containsKey(teamName);
+                    if (!gameManagerList.containsKey(teamName)) {
+                        //todo エラーメッセージを適切な対象に送る
+                        Bukkit.getServer().broadcastMessage(ErrorMessage.NO_TEAM_NAME.replace("TEAM_NAME", teamName));
+                        return false;
+                    }
+
                     //プレイヤーの足元のブロックを取得
                     Location location = ((Player) sender).getLocation();
                     location.add(0, -0.1, 0);
@@ -85,21 +93,32 @@ public final class BlockLandingPlugin extends JavaPlugin {
                     Chest chest = (Chest) footBlock.getState();
                     Inventory inv = chest.getInventory();
 
-                    temp = getItems(inv);
+                    //todo もう一度Mapに登録する必要がある？
+                    GameManager teamGameManager = gameManagerList.get(teamName);
+                    HashMap<Integer, ItemStack> items = getItems(inv);
+                    teamGameManager.setItemList(getItems(inv));
+
                     int sum = 0;
-                    for (ItemStack item : temp.values()) {
+                    for (ItemStack item : items.values()) {
                         sum += item.getAmount();
                     }
                     Bukkit.getServer().broadcastMessage("チェストの中身を読み込みました（" + sum + "個）");
                     break;
+
+                //現在存在するチームを元にゲームを作成する
                 case GAME_TEAM_SET:
                     ScoreboardManager manager = Bukkit.getScoreboardManager();
                     Scoreboard board = manager.getMainScoreboard();
                     Set<Team> teams = board.getTeams();
+                    List<String> teamNames = new ArrayList<>();
+
                     for (Team targetTeam : teams) {
-                        GameManager gameManager = new GameManager(this, targetTeam);
-                        gameManagerList.add(gameManager);
+                        GameManager newGameManager = new GameManager(this, targetTeam);
+                        gameManagerList.put(targetTeam.getName(), newGameManager);
+                        teamNames.add(targetTeam.getName());
                     }
+
+                    Bukkit.getServer().broadcastMessage("チームを読み込みました（" + teamNames.stream().collect(Collectors.joining("、")) + "）");
                     break;
             }
         } catch (Exception e) {
