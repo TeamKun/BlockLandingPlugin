@@ -8,8 +8,8 @@ commands:
     lstart:
         description: 建材落下ゲームを始めます。
 
-    lready:
-        description: 自分の下のチェストの中身をゲームに使います。
+    lgameready:
+        description: 自分の足元のチェストの中身をゲーム用に設定します。
 
     lteamready:
-        description: チームを設定します。
+        description: チームを設定します。現在存在しているチームを読み込みます。

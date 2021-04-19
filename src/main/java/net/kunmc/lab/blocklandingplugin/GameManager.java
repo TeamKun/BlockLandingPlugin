@@ -9,32 +9,44 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Team;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
- * 1チェスト単位で管理
+ * チーム単位でゲームを管理
  */
 public class GameManager {
 
-    private Team team;
     private final BlockLandingPlugin blockLandingPlugin;
+    private final Team team;
+    //タスクから参照されるためstatic
+    public static List<LandingBlockTask> blockList = new ArrayList<>();
+    public Map<Integer, ItemStack> itemList = new HashMap<>();
 
     public GameManager(BlockLandingPlugin _blockLandingPlugin, Team team) {
         blockLandingPlugin = _blockLandingPlugin;
         this.team = team;
     }
 
-    public static List<LandingBlockTask> blockList = new ArrayList<>();
 
-    public Map<Integer, ItemStack> itemList = new HashMap<>();
-
-    public void start(Player player) {
+    //ゲームを開始する
+    public void start() {
         blockList = new ArrayList<>();
-        Set<OfflinePlayer> teamPlayers = team.getPlayers();
+        List<OfflinePlayer> teamPlayers = team.getPlayers().stream().filter(OfflinePlayer::isOnline).collect(Collectors.toList());
         ConfigData configData = ConfigData.getInstance();
         int count = 0;
+        Player player;
+
+        Iterator<OfflinePlayer> iterator = teamPlayers.iterator();
         for (ItemStack item : itemList.values()) {
             for (int i = 0; i < item.getAmount(); i++) {
+                //リストの最後までいった場合初期化
+                if(!iterator.hasNext()){
+                    iterator = teamPlayers.iterator();
+                }
+                player = iterator.next().getPlayer();
                 //初期ブロック設定
+                assert player != null;
                 Location location = player.getLocation();
                 location.setY(location.getY() + configData.getStartY());
                 Block block = location.getBlock();
