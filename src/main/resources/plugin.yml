@@ -5,11 +5,5 @@ api-version: 1.16
 authors: [sudo]
 description: 建材落下プラグイン
 commands:
-    lstart:
+    landing:
         description: 建材落下ゲームを始めます。
-
-    lgameready:
-        description: 自分の足元のチェストの中身をゲーム用に設定します。
-
-    lteamready:
-        description: チームを設定します。現在存在しているチームを読み込みます。

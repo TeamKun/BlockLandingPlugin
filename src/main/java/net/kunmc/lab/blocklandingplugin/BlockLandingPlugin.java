@@ -4,7 +4,6 @@ import net.kunmc.lab.blocklandingplugin.message.ErrorMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
@@ -43,26 +42,37 @@ public final class BlockLandingPlugin extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 
+        //ゲームコマンド
+        final String CMD = "landing";
+
         //ゲーム開始コマンド
-        final String GAME_START = "lstart";
+        final String GAME_START = "start";
 
         //ゲーム設定コマンド
-        final String GAME_SET = "lgameready";
+        final String GAME_SET = "ready";
 
         //チーム設定コマンド
-        final String TEAM_SET = "lteamready";
+        final String TEAM_SET = "team";
 
         try {
-            switch (cmd.getName().toLowerCase()) {
-                case GAME_START:
-                    return gameStart(sender);
+            if(cmd.getName().equals(CMD)){
+                if(args.length < 1){
+                    //todo エラーメッセージを適切な対象に送る
+                    Bukkit.getServer().broadcastMessage(ErrorMessage.LESS_ARGS);
+                    return false;
+                }
 
-                case GAME_SET:
-                    return gameSet(sender, args);
+                switch (args[0].toLowerCase()) {
+                    case GAME_START:
+                        return gameStart(sender);
 
-                //現在存在するチームを元にゲームを作成する
-                case TEAM_SET:
-                    return teamSet();
+                    case GAME_SET:
+                        return gameSet(sender, args);
+
+                    //現在存在するチームを元にゲームを作成する
+                    case TEAM_SET:
+                        return teamSet();
+                }
             }
         } catch (Exception e) {
             Bukkit.getServer().broadcastMessage(e.getMessage());
@@ -90,13 +100,13 @@ public final class BlockLandingPlugin extends JavaPlugin {
         }
 
         //チームが必要
-        if (args.length != 1) {
+        if (args.length != 2) {
             //todo エラーメッセージを適切な対象に送る
             Bukkit.getServer().broadcastMessage(ErrorMessage.NO_TEAM_CMD);
             return false;
         }
 
-        String teamName = args[0];
+        String teamName = args[1];
         //指定チームが存在しない場合
         if (!gameManagerList.containsKey(teamName)) {
             //todo エラーメッセージを適切な対象に送る
