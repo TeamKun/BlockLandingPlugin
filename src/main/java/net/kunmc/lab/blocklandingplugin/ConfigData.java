@@ -8,31 +8,33 @@ public class ConfigData {
      */
     public static final String START_Y_STRING = "startY";
 
-    public int startY;
+    private int startY;
+
+    private int taskRepeatTime;
 
     private ConfigData(){
         this.startY = 0;
+        this.taskRepeatTime = 0;
     }
 
-    /**
-     * @return
-     */
     public static ConfigData getInstance(){
         return ConfigInstanceHolder.INSTANCE;
     }
 
-    /**
-     * @return
-     */
     public int getStartY(){
-        return startY;
+        return this.startY;
     }
 
-    /**
-     * @param startY
-     */
     public void setStartY(int startY){
         this.startY = startY;
+    }
+
+    public int getTaskRepeatTime(){
+        return taskRepeatTime ;
+    }
+
+    public void setTaskRepeatTime(int taskRepeatTime){
+        this.taskRepeatTime = taskRepeatTime;
     }
 
     /**

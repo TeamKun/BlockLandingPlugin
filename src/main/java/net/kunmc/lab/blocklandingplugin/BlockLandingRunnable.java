@@ -19,16 +19,18 @@ import java.util.stream.Stream;
  */
 public class BlockLandingRunnable extends BukkitRunnable {
 
-    Player player;
-    Block block;
-    int index;
-    Plugin plugin;
+    private Player player;
+    private Block block;
+    private int index;
+    private int count;
+    private Plugin plugin;
 
     public BlockLandingRunnable(Plugin plugin, Player player, Block block, int index) {
         this.plugin = plugin;
         this.player = player;
         this.block = block;
         this.index = index;
+        this.count = 0;
     }
 
     //todo ふってこないアイテムだとcancelまでたどり着かずバグる
@@ -36,23 +38,30 @@ public class BlockLandingRunnable extends BukkitRunnable {
 
         //次のブロックの位置決め
         Location location = block.getLocation();
-        location.add(0, -1, 0);
+        if (count % 2 == 0) {
+            location.add(0, -1, 0);
+        }
         location.setX(player.getLocation().getX());
         location.setZ(player.getLocation().getZ());
 
         //次のブロック生成
         Block nextBlock = location.getBlock();
-        nextBlock.setType(GameManager.blockList.get(index).getMaterial());
         block.setType(Material.AIR);
+
+        if (nextBlock.getType() != Material.AIR) {
+            nextBlock = nextBlock.getLocation().add(0, 1, 0).getBlock();
+        }
+        nextBlock.setType(GameManager.blockList.get(index).getMaterial());
         block = nextBlock;
 
         //当り判定確認
         if (isHittingNextBlock(block)) {
             //次がある場合
             if (index + 1 < GameManager.blockList.size()) {
-                GameManager.blockList.get(index + 1).getBlockLandingRunnable().runTaskTimer(plugin, 0, 20);
-            }else{
-                player.sendTitle("完成！","",10,80,10);
+                ConfigData configData = ConfigData.getInstance();
+                GameManager.blockList.get(index + 1).getBlockLandingRunnable().runTaskTimer(plugin, 0, configData.getTaskRepeatTime());
+            } else {
+                player.sendTitle("完成！", "", 10, 80, 10);
             }
             location.getWorld().spawnParticle(
                     Particle.SPELL_MOB,
@@ -61,6 +70,7 @@ public class BlockLandingRunnable extends BukkitRunnable {
             );
             cancel();
         }
+        count++;
     }
 
     /**

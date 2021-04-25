@@ -21,7 +21,7 @@ public class GameManager {
     private final Team team;
     //タスクから参照されるためstatic
     public static List<LandingBlockTask> blockList = new ArrayList<>();
-    public Map<Integer, ItemStack> itemList = new HashMap<>();
+    private Map<Integer, ItemStack> itemList = new HashMap<>();
 
     public GameManager(BlockLandingPlugin _blockLandingPlugin, Team team) {
         blockLandingPlugin = _blockLandingPlugin;
@@ -41,7 +41,7 @@ public class GameManager {
         for (ItemStack item : itemList.values()) {
             for (int i = 0; i < item.getAmount(); i++) {
                 //リストの最後までいった場合初期化
-                if(!iterator.hasNext()){
+                if (!iterator.hasNext()) {
                     iterator = teamPlayers.iterator();
                 }
                 player = iterator.next().getPlayer();
@@ -54,7 +54,7 @@ public class GameManager {
             }
         }
 
-        blockList.get(0).getBlockLandingRunnable().runTaskTimer(blockLandingPlugin, 0, 20);
+        blockList.get(0).getBlockLandingRunnable().runTaskTimer(blockLandingPlugin, 0, configData.getTaskRepeatTime());
     }
 
     public GameManager setItemList(Map<Integer, ItemStack> itemList) {
