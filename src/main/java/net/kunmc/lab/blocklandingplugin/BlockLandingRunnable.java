@@ -7,30 +7,32 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.BoundingBox;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * 1ブロック落下までを管理
  */
 public class BlockLandingRunnable extends BukkitRunnable {
 
+    private Plugin plugin;
     private Player player;
     private Block block;
     private int index;
     private int count;
-    private Plugin plugin;
 
-    public BlockLandingRunnable(Plugin plugin, Player player, Block block, int index) {
+    public BlockLandingRunnable(Plugin plugin, Player player, int index) {
         this.plugin = plugin;
         this.player = player;
-        this.block = block;
         this.index = index;
         this.count = 0;
+
+        //初期ブロック設定
+        assert player != null;
+        Location location = player.getLocation();
+        ConfigData configData = ConfigData.getInstance();
+        location.setY(location.getY() + configData.getStartY());
+        this.block = location.getBlock();
     }
 
     //todo ふってこないアイテムだとcancelまでたどり着かずバグる
@@ -48,6 +50,7 @@ public class BlockLandingRunnable extends BukkitRunnable {
         Block nextBlock = location.getBlock();
         block.setType(Material.AIR);
 
+        //移動位置にブロックがあった場合一つ上に移動
         if (nextBlock.getType() != Material.AIR) {
             nextBlock = nextBlock.getLocation().add(0, 1, 0).getBlock();
         }
@@ -56,7 +59,7 @@ public class BlockLandingRunnable extends BukkitRunnable {
 
         //当り判定確認
         if (isHittingNextBlock(block)) {
-            //次がある場合
+            //次のブロックがある場合、次のブロック分のタスクを起動する
             if (index + 1 < GameManager.blockList.size()) {
                 ConfigData configData = ConfigData.getInstance();
                 GameManager.blockList.get(index + 1).getBlockLandingRunnable().runTaskTimer(plugin, 0, configData.getTaskRepeatTime());
