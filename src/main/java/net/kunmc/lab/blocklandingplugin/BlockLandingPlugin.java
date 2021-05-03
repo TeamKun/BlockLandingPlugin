@@ -1,6 +1,7 @@
 package net.kunmc.lab.blocklandingplugin;
 
 import net.kunmc.lab.blocklandingplugin.message.ErrorMessage;
+import net.kunmc.lab.blocklandingplugin.team.LandingTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,8 +23,7 @@ import java.util.stream.Collectors;
 
 public final class BlockLandingPlugin extends JavaPlugin {
 
-    //teamname,gameManager
-    private Map<String, GameManager> gameManagerList = new HashMap<>();
+    GameManager gameManager;
 
     @Override
     public void onEnable() {
@@ -83,10 +83,9 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
     //ゲーム実行
     private boolean gameStart(CommandSender sender) {
-        if (gameManagerList.size() == 0) {
-            Bukkit.getServer().broadcastMessage(ErrorMessage.CANT_START);
-        }
-        gameManagerList.forEach((k, v) -> v.start());
+        ConfigData configData = ConfigData.getInstance();
+
+        this.gameManager.runTaskTimer(this, 0, configData.getTaskRepeatTime());
         return false;
     }
 
@@ -108,7 +107,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
         String teamName = args[1];
         //指定チームが存在しない場合
-        if (!gameManagerList.containsKey(teamName)) {
+        if (!gameManager.getLandingTeamList().containsKey(teamName)) {
             //todo エラーメッセージを適切な対象に送る
             Bukkit.getServer().broadcastMessage(ErrorMessage.NO_TEAM_NAME.replace("TEAM_NAME", teamName));
             return false;
@@ -127,10 +126,11 @@ public final class BlockLandingPlugin extends JavaPlugin {
         Chest chest = (Chest) footBlock.getState();
         Inventory inv = chest.getInventory();
 
-        //todo もう一度Mapに登録する必要がある？
-        GameManager teamGameManager = gameManagerList.get(teamName);
         HashMap<Integer, ItemStack> items = getItems(inv);
-        teamGameManager.setItemList(getItems(inv));
+        Map<String, LandingTeam> landingTeamList = gameManager.getLandingTeamList();
+        landingTeamList.get(teamName).setItemList(getItems(inv));
+
+        teamGameManager.setItemList();
 
         int sum = 0;
         for (ItemStack item : items.values()) {
@@ -148,8 +148,9 @@ public final class BlockLandingPlugin extends JavaPlugin {
         List<String> teamNames = new ArrayList<>();
 
         for (Team targetTeam : teams) {
-            GameManager newGameManager = new GameManager(this, targetTeam);
-            gameManagerList.put(targetTeam.getName(), newGameManager);
+            List<LandingTeam> landingTeamList = new ArrayList<LandingTeam>();
+            LandingTeam landingTeam = new LandingTeam(targetTeam);
+            landingTeamList.add(landingTeam);
             teamNames.add(targetTeam.getName());
         }
 

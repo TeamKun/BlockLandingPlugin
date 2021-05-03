@@ -14,30 +14,22 @@ public class LandingTurn {
     //ブロック素材
     private Material material;
 
-    public Player getPlayer() {
-        return this.player;
+    public LandingTurn(Player player, Block block, Material material) {
+        this.player = player;
+        this.block = block;
+        this.material = material;
     }
 
-    public LandingTurn setPlayer(Player player) {
-        this.player = player;
-        return this;
+    public Player getPlayer() {
+        return this.player;
     }
 
     public Block getBlock() {
         return this.block;
     }
 
-    public LandingTurn setBlock(Block block) {
-        this.block = block;
-        return this;
-    }
-
-    public Material getMaterial(){
+    public Material getMaterial() {
         return this.material;
     }
 
-    public LandingTurn setMaterial(Material material){
-        this.material = material;
-        return this;
-    }
 }

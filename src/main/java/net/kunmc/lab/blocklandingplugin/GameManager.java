@@ -1,38 +1,41 @@
 package net.kunmc.lab.blocklandingplugin;
+
 import net.kunmc.lab.blocklandingplugin.team.LandingTeam;
 import net.kunmc.lab.blocklandingplugin.team.turn.LandingTurn;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.scoreboard.Team;
+import org.bukkit.scheduler.BukkitRunnable;
+
 import java.util.*;
-import java.util.stream.Collectors;
 
-/**
- * チーム単位でゲームを管理
- */
-public class GameManager {
-    private List<LandingTeam> landingTeamList;
 
-    public void start(){
+public class GameManager extends BukkitRunnable {
+
+    private static Map<String, LandingTeam> landingTeamList;
+
+    public void setLandingTeamList(Map<String, LandingTeam> landingTeamList) {
+        this.landingTeamList = landingTeamList;
+    }
+
+    public Map<String, LandingTeam> getLandingTeamList() {
+        return this.landingTeamList;
+    }
+
+    public void run() {
         //各チームに対して順番に処理を行う
-        for(LandingTeam landingTeam : this.landingTeamList){
+        for (Map.Entry<String, LandingTeam> landingTeam : landingTeamList.entrySet()) {
             //ブロック・プレイヤー読み込み
-            LandingTurn landingTurn = landingTeam.getLandingTurn();
-            Block block = landingTurn.getBlock();
-            Player player = landingTurn.getPlayer();
-
-            //ブロック初回生成
-            if(block == null){
-
-            }
+            LandingTurn currentTurn = landingTeam.getValue().getCurrentTurn();
+            Block block = currentTurn.getBlock();
+            Player player = currentTurn.getPlayer();
+            Material material = currentTurn.getMaterial();
 
             //次のブロックの位置決め
             Location location = block.getLocation();
-            if (landingTeam.getCount() % 2 == 0) {
+            if (landingTeam.getValue().getCount() % 2 == 0) {
                 location.add(0, -1, 0);
             }
             location.setX(player.getLocation().getX());
@@ -46,16 +49,22 @@ public class GameManager {
             if (nextBlock.getType() != Material.AIR) {
                 nextBlock = nextBlock.getLocation().add(0, 1, 0).getBlock();
             }
-            nextBlock.setType(block.getType());
+            nextBlock.setType(material);
             block = nextBlock;
 
             //当り判定
-            if(isHittingNextBlock(block)){
+            if (isHittingNextBlock(block)) {
+                location.getWorld().spawnParticle(
+                        Particle.SPELL_MOB,
+                        location,
+                        10
+                );
                 //次の準備
-
+                landingTeam.getValue().setNextTurn();
             }
 
-            landingTeam.addCount();
+            landingTeam.getValue().addTurnCount();
+            player.sendTitle("完成！", "", 10, 80, 10);
         }
     }
 
@@ -80,44 +89,4 @@ public class GameManager {
         }
         return false;
     }
-/*
-    private final BlockLandingPlugin blockLandingPlugin;
-    private final Team team;
-    private List<LandingBlockTask> landingBlockTask = new ArrayList<>();
-    private Map<Integer, ItemStack> itemList = new HashMap<>();
-
-    public GameManager(BlockLandingPlugin _blockLandingPlugin, Team team) {
-        blockLandingPlugin = _blockLandingPlugin;
-        this.team = team;
-    }
-
-    //ゲームを開始する
-    public void start() {
-        landingBlockTask = new ArrayList<>();
-        List<OfflinePlayer> teamPlayers = team.getPlayers().stream().filter(OfflinePlayer::isOnline).collect(Collectors.toList());
-
-        int index = 0;
-        Player player;
-
-        Iterator<OfflinePlayer> iterator = teamPlayers.iterator();
-        for (ItemStack item : itemList.values()) {
-            for (int i = 0; i < item.getAmount(); i++) {
-                //リストの最後までいった場合初期化
-                if (!iterator.hasNext()) {
-                    iterator = teamPlayers.iterator();
-                }
-                player = iterator.next().getPlayer();
-                assert player != null;
-                landingBlockTask.add(new LandingBlockTask(new BlockLandingRunnable(blockLandingPlugin, player, index++), item.getType()));
-            }
-        }
-
-        landingBlockTask.get(0).getBlockLandingRunnable().runTaskTimer(blockLandingPlugin, 0, configData.getTaskRepeatTime());
-    }
-
-    public GameManager setItemList(Map<Integer, ItemStack> itemList) {
-        this.itemList = itemList;
-        return this;
-    }
-*/
 }

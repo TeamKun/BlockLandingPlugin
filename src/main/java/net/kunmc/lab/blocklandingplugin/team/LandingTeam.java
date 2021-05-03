@@ -41,7 +41,7 @@ public final class LandingTeam extends JavaPlugin {
 
     private int turnCount;
 
-    public LandingTeam(Team team, List<ItemStack> itemList) {
+    public LandingTeam(Team team) {
         this.team = team;
 
         this.itemList = itemList;
@@ -49,8 +49,10 @@ public final class LandingTeam extends JavaPlugin {
 
         this.teamPlayers = team.getPlayers();
         this.playerIterator = teamPlayers.iterator();
+    }
 
-        this.block = null;
+    public LandingTeam setItemList(List<ItemStack> itemList){
+        this.itemList = itemList;
     }
 
     public int getCount() {
@@ -62,30 +64,35 @@ public final class LandingTeam extends JavaPlugin {
         return this;
     }
 
+    public boolean hasLandingTurn(){
+        if (this.itemIterator.hasNext()) {
+            return true;
+        }
+        return false;
+    }
+
     //次のブロックとプレイヤーの設定
     public void setNextTurn() {
         //プレイヤー設定
         //リストの最後までいった場合初期化
         Player player;
-
-        //memo: 危ないかな…でもチームに一人も有効な人がいない場合以外無限ループしないので、エラールート作るほどのリスクはないような…
-        while(true) {
-            if (!this.playerIterator.hasNext()) {
-                this.playerIterator = teamPlayers.iterator();
+        if (this.hasLandingTurn()) {
+            //オンラインプレイヤーを割り当て
+            //memo: 危ないかな…でもチームに一人も有効な人がいない場合以外無限ループしないので、エラールート作るほどのリスクはないような…
+            while (true) {
+                if (!this.playerIterator.hasNext()) {
+                    this.playerIterator = teamPlayers.iterator();
+                }
+                player = this.playerIterator.next().getPlayer();
+                if (player.isOnline()) {
+                    break;
+                }
             }
-            player = this.playerIterator.next().getPlayer();
-            if(player.isOnline()){
-                break;
-            }
+            this.currentTurn = new LandingTurn(player, player.getLocation().getBlock(), this.itemIterator.next().getType());
         }
-        this.currentTurn.setPlayer(player);
-
-        //アイテム設定
-        this.currentTurn.setBlock(player.getLocation().getBlock());
-        this.currentTurn.setMaterial(this.itemIterator.next().getType());
     }
 
-    public LandingTurn getCurrentTurn(){
+    public LandingTurn getCurrentTurn() {
         return this.currentTurn;
     }
 }
