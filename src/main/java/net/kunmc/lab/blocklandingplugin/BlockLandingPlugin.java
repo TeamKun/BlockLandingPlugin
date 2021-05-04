@@ -130,8 +130,6 @@ public final class BlockLandingPlugin extends JavaPlugin {
         Map<String, LandingTeam> landingTeamList = gameManager.getLandingTeamList();
         landingTeamList.get(teamName).setItemList(getItems(inv));
 
-        teamGameManager.setItemList();
-
         int sum = 0;
         for (ItemStack item : items.values()) {
             sum += item.getAmount();

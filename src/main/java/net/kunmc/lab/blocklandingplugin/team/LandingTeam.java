@@ -29,8 +29,8 @@ public final class LandingTeam extends JavaPlugin {
     private Team team;
 
     //アイテム
-    private List<ItemStack> itemList;
-    private Iterator<ItemStack> itemIterator;
+    private List<Material> itemList;
+    private Iterator<Material> itemIterator;
 
     //プレイヤー
     private Set<OfflinePlayer> teamPlayers;
@@ -51,8 +51,13 @@ public final class LandingTeam extends JavaPlugin {
         this.playerIterator = teamPlayers.iterator();
     }
 
-    public LandingTeam setItemList(List<ItemStack> itemList){
-        this.itemList = itemList;
+    public LandingTeam setItemList(HashMap<Integer, ItemStack> itemList) {
+        for (Map.Entry<Integer, ItemStack> item : itemList.entrySet()) {
+            for (int i = 0; i < item.getValue().getAmount(); i++) {
+                this.itemList.add(item.getValue().getType());
+            }
+        }
+        return this;
     }
 
     public int getCount() {
@@ -64,7 +69,7 @@ public final class LandingTeam extends JavaPlugin {
         return this;
     }
 
-    public boolean hasLandingTurn(){
+    public boolean hasLandingTurn() {
         if (this.itemIterator.hasNext()) {
             return true;
         }
@@ -88,7 +93,7 @@ public final class LandingTeam extends JavaPlugin {
                     break;
                 }
             }
-            this.currentTurn = new LandingTurn(player, player.getLocation().getBlock(), this.itemIterator.next().getType());
+            this.currentTurn = new LandingTurn(player, player.getLocation().getBlock(), this.itemIterator.next());
         }
     }
 
