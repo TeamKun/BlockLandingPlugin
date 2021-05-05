@@ -30,6 +30,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
         FileConfiguration config = getConfig();
         ConfigData configData = ConfigData.getInstance();
         int startY = Integer.parseInt(config.getString("startY"));
+        this.gameManager = new GameManager();
         configData.setStartY(startY);
     }
 
@@ -49,14 +50,14 @@ public final class BlockLandingPlugin extends JavaPlugin {
         final String GAME_START = "start";
 
         //ゲーム設定コマンド
-        final String GAME_SET = "ready";
+        final String GAME_SET = "set";
 
         //チーム設定コマンド
         final String TEAM_SET = "team";
 
         try {
-            if(cmd.getName().equals(CMD)){
-                if(args.length < 1){
+            if (cmd.getName().equals(CMD)) {
+                if (args.length < 1) {
                     //todo エラーメッセージを適切な対象に送る
                     Bukkit.getServer().broadcastMessage(ErrorMessage.LESS_ARGS);
                     return false;
@@ -84,6 +85,12 @@ public final class BlockLandingPlugin extends JavaPlugin {
     //ゲーム実行
     private boolean gameStart(CommandSender sender) {
         ConfigData configData = ConfigData.getInstance();
+
+        Map<String, LandingTeam> landingTeamList = this.gameManager.getLandingTeamList();
+        //最初の1ターン目を生成しておく
+        for (Map.Entry<String, LandingTeam> landingTeam : landingTeamList.entrySet()) {
+            landingTeam.getValue().setNextTurn();
+        }
 
         this.gameManager.runTaskTimer(this, 0, configData.getTaskRepeatTime());
         return false;
@@ -145,12 +152,13 @@ public final class BlockLandingPlugin extends JavaPlugin {
         Set<Team> teams = board.getTeams();
         List<String> teamNames = new ArrayList<>();
 
+        Map<String, LandingTeam> landingTeamList = new HashMap<String, LandingTeam>();
         for (Team targetTeam : teams) {
-            List<LandingTeam> landingTeamList = new ArrayList<LandingTeam>();
             LandingTeam landingTeam = new LandingTeam(targetTeam);
-            landingTeamList.add(landingTeam);
+            landingTeamList.put(targetTeam.getName(), landingTeam);
             teamNames.add(targetTeam.getName());
         }
+        gameManager.setLandingTeamList(landingTeamList);
 
         Bukkit.getServer().broadcastMessage("チームを読み込みました（" + teamNames.stream().collect(Collectors.joining("、")) + "）");
         return false;
