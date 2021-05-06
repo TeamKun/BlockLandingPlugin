@@ -1,6 +1,6 @@
 package net.kunmc.lab.blocklandingplugin;
 
-import net.kunmc.lab.blocklandingplugin.message.ErrorMessage;
+import net.kunmc.lab.blocklandingplugin.message.GameMessage;
 import net.kunmc.lab.blocklandingplugin.team.LandingTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -30,8 +30,9 @@ public final class BlockLandingPlugin extends JavaPlugin {
         FileConfiguration config = getConfig();
         ConfigData configData = ConfigData.getInstance();
         int startY = Integer.parseInt(config.getString("startY"));
-        this.gameManager = new GameManager();
         configData.setStartY(startY);
+
+        this.gameManager = new GameManager();
     }
 
     @Override
@@ -55,11 +56,9 @@ public final class BlockLandingPlugin extends JavaPlugin {
         //チーム設定コマンド
         final String TEAM_SET = "team";
 
-        try {
             if (cmd.getName().equals(CMD)) {
                 if (args.length < 1) {
-                    //todo エラーメッセージを適切な対象に送る
-                    Bukkit.getServer().broadcastMessage(ErrorMessage.LESS_ARGS);
+                    sender.sendMessage(GameMessage.ERROR_LESS_ARGS);
                     return false;
                 }
 
@@ -70,14 +69,12 @@ public final class BlockLandingPlugin extends JavaPlugin {
                     case GAME_SET:
                         return gameSet(sender, args);
 
-                    //現在存在するチームを元にゲームを作成する
+                    //現在存在するチームを読み込む
                     case TEAM_SET:
-                        return teamSet();
+                        return teamSet(sender);
                 }
             }
-        } catch (Exception e) {
-            Bukkit.getServer().broadcastMessage(e.getMessage());
-        }
+
 
         return false;
     }
@@ -100,23 +97,20 @@ public final class BlockLandingPlugin extends JavaPlugin {
     private boolean gameSet(CommandSender sender, String[] args) {
         //実行者がプレイヤーでないと足元のチェストが拾えないため
         if (!(sender instanceof Player)) {
-            //todo エラーメッセージを適切な対象に送る
-            Bukkit.getServer().broadcastMessage(ErrorMessage.CMD_SENDER_ERROR);
+            sender.sendMessage(GameMessage.ERROR_CMD_SENDER_ERROR);
             return false;
         }
 
         //チームが必要
         if (args.length != 2) {
-            //todo エラーメッセージを適切な対象に送る
-            Bukkit.getServer().broadcastMessage(ErrorMessage.NO_TEAM_CMD);
+            sender.sendMessage(GameMessage.ERROR_NO_TEAM_CMD);
             return false;
         }
 
         String teamName = args[1];
         //指定チームが存在しない場合
         if (!gameManager.getLandingTeamList().containsKey(teamName)) {
-            //todo エラーメッセージを適切な対象に送る
-            Bukkit.getServer().broadcastMessage(ErrorMessage.NO_TEAM_NAME.replace("TEAM_NAME", teamName));
+            sender.sendMessage(GameMessage.getErrorNoTeamName(teamName));
             return false;
         }
 
@@ -125,15 +119,14 @@ public final class BlockLandingPlugin extends JavaPlugin {
         location.add(0, -0.1, 0);
         Block footBlock = location.getBlock();
         if (footBlock.getType() != Material.CHEST) {
-            //todo エラーメッセージを適切な対象に送る
-            Bukkit.getServer().broadcastMessage(ErrorMessage.NOT_CHEST);
+            sender.sendMessage(GameMessage.ERROR_NOT_CHEST);
             return false;
         }
         //チェストであれば、中身を取得してゲームに設定する
         Chest chest = (Chest) footBlock.getState();
         Inventory inv = chest.getInventory();
 
-        HashMap<Integer, ItemStack> items = getItems(inv);
+        Map<Integer, ItemStack> items = getItems(inv);
         Map<String, LandingTeam> landingTeamList = gameManager.getLandingTeamList();
         landingTeamList.get(teamName).setItemList(getItems(inv));
 
@@ -141,34 +134,34 @@ public final class BlockLandingPlugin extends JavaPlugin {
         for (ItemStack item : items.values()) {
             sum += item.getAmount();
         }
-        Bukkit.getServer().broadcastMessage("チェストの中身を読み込みました（" + sum + "個）");
+        sender.sendMessage(GameMessage.getLoadingChest(sum));
         return false;
     }
 
     //現在のチームを読み込む
-    private boolean teamSet() {
+    private boolean teamSet(CommandSender sender) {
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         Scoreboard board = manager.getMainScoreboard();
         Set<Team> teams = board.getTeams();
-        List<String> teamNames = new ArrayList<>();
 
-        Map<String, LandingTeam> landingTeamList = new HashMap<String, LandingTeam>();
+        List<String> teamNames = new ArrayList<>();
+        Map<String, LandingTeam> landingTeamList = new HashMap<>();
+
         for (Team targetTeam : teams) {
-            LandingTeam landingTeam = new LandingTeam(targetTeam);
+            LandingTeam landingTeam = new LandingTeam(targetTeam.getEntries().stream().collect(Collectors.toSet()), targetTeam.getName());
             landingTeamList.put(targetTeam.getName(), landingTeam);
             teamNames.add(targetTeam.getName());
         }
         gameManager.setLandingTeamList(landingTeamList);
-
-        Bukkit.getServer().broadcastMessage("チームを読み込みました（" + teamNames.stream().collect(Collectors.joining("、")) + "）");
+        sender.sendMessage(GameMessage.getLoadingTeam(teamNames.stream().collect(Collectors.joining("、"))));
         return false;
     }
 
     /**
-     * インベントリからアイテムを重複しない形で取得
+     * インベントリからアイテムを取得
      */
-    private HashMap<Integer, ItemStack> getItems(Inventory inv) {
-        HashMap<Integer, ItemStack> items = new HashMap<>();
+    private Map<Integer, ItemStack> getItems(Inventory inv) {
+        Map<Integer, ItemStack> items = new HashMap<>();
         for (int i = 0, size = inv.getSize(); i < size; ++i) {
             // アイテム取得
             ItemStack targetItem = inv.getItem(i);

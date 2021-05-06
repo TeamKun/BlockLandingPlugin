@@ -14,13 +14,13 @@ import java.util.*;
 
 public class GameManager extends BukkitRunnable {
 
-    private static Map<String, LandingTeam> landingTeamList;
+    private static Map<String,LandingTeam> landingTeamList;
 
-    public void setLandingTeamList(Map<String, LandingTeam> landingTeamList) {
+    public void setLandingTeamList(Map<String,LandingTeam> landingTeamList) {
         this.landingTeamList = landingTeamList;
     }
 
-    public Map<String, LandingTeam> getLandingTeamList() {
+    public Map<String,LandingTeam> getLandingTeamList() {
         return this.landingTeamList;
     }
 
