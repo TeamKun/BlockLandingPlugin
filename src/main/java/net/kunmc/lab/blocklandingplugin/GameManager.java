@@ -14,19 +14,25 @@ import java.util.*;
 
 public class GameManager extends BukkitRunnable {
 
-    private static Map<String,LandingTeam> landingTeamList;
+    private static Map<String, LandingTeam> landingTeamList;
 
-    public void setLandingTeamList(Map<String,LandingTeam> landingTeamList) {
+    public void setLandingTeamList(Map<String, LandingTeam> landingTeamList) {
         this.landingTeamList = landingTeamList;
     }
 
-    public Map<String,LandingTeam> getLandingTeamList() {
+    public Map<String, LandingTeam> getLandingTeamList() {
         return this.landingTeamList;
     }
 
     public void run() {
+        boolean isGaming = false;
         //各チームに対して順番に処理を行う
         for (Map.Entry<String, LandingTeam> landingTeam : landingTeamList.entrySet()) {
+
+            if (!landingTeam.getValue().hasNextTurn()) {
+                continue;
+            }
+
             //ブロック・プレイヤー読み込み
             LandingTurn currentTurn = landingTeam.getValue().getCurrentTurn();
             Block block = currentTurn.getBlock();
@@ -34,37 +40,46 @@ public class GameManager extends BukkitRunnable {
             Material material = currentTurn.getMaterial();
 
             //次のブロックの位置決め
-            Location location = block.getLocation();
+            Location nextLocation = block.getLocation();
             if (landingTeam.getValue().getCount() % 2 == 0) {
-                location.add(0, -1, 0);
+                nextLocation.add(0, -1, 0);
             }
-            location.setX(player.getLocation().getX());
-            location.setZ(player.getLocation().getZ());
+            nextLocation.setX(player.getLocation().getX());
+            nextLocation.setZ(player.getLocation().getZ());
 
             //次のブロック生成
-            Block nextBlock = location.getBlock();
+            Block nextBlock = nextLocation.getBlock();
             block.setType(Material.AIR);
 
             //移動位置にブロックがあった場合一つ上に移動
             if (nextBlock.getType() != Material.AIR) {
                 nextBlock = nextBlock.getLocation().add(0, 1, 0).getBlock();
             }
+            //ブロック具現化
             nextBlock.setType(material);
             block = nextBlock;
 
             //当り判定
+            //どこかに引っかかっていれば次のターンへ
             if (isHittingNextBlock(block)) {
-                location.getWorld().spawnParticle(
+                nextLocation.getWorld().spawnParticle(
                         Particle.SPELL_MOB,
-                        location,
+                        nextLocation,
                         10
                 );
                 //次の準備
                 landingTeam.getValue().setNextTurn();
+                if (!landingTeam.getValue().hasNextTurn()) {
+                    landingTeam.getValue().sendTitleToTeamMember("完成！");
+                    continue;
+                }
             }
-
+            isGaming = true;
             landingTeam.getValue().addTurnCount();
-            player.sendTitle("完成！", "", 10, 80, 10);
+        }
+
+        if (!isGaming) {
+            cancel();
         }
     }
 

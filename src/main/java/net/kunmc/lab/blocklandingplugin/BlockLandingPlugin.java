@@ -23,15 +23,17 @@ import java.util.stream.Collectors;
 
 public final class BlockLandingPlugin extends JavaPlugin {
 
-    GameManager gameManager;
+    private GameManager gameManager;
 
     @Override
     public void onEnable() {
         FileConfiguration config = getConfig();
         ConfigData configData = ConfigData.getInstance();
         int startY = Integer.parseInt(config.getString("startY"));
-        configData.setStartY(startY);
+        int taskRepeatTime = Integer.parseInt(config.getString("taskRepeatTime"));
 
+        configData.setStartY(startY);
+        configData.setTaskRepeatTime(taskRepeatTime);
         this.gameManager = new GameManager();
     }
 
@@ -40,7 +42,6 @@ public final class BlockLandingPlugin extends JavaPlugin {
         // Plugin shutdown logic
     }
 
-    //todo resetコマンド作る？
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 
@@ -56,31 +57,30 @@ public final class BlockLandingPlugin extends JavaPlugin {
         //チーム設定コマンド
         final String TEAM_SET = "team";
 
-            if (cmd.getName().equals(CMD)) {
-                if (args.length < 1) {
-                    sender.sendMessage(GameMessage.ERROR_LESS_ARGS);
-                    return false;
-                }
-
-                switch (args[0].toLowerCase()) {
-                    case GAME_START:
-                        return gameStart(sender);
-
-                    case GAME_SET:
-                        return gameSet(sender, args);
-
-                    //現在存在するチームを読み込む
-                    case TEAM_SET:
-                        return teamSet(sender);
-                }
+        if (cmd.getName().equals(CMD)) {
+            if (args.length < 1) {
+                sender.sendMessage(GameMessage.ERROR_LESS_ARGS);
+                return false;
             }
 
+            switch (args[0].toLowerCase()) {
+                case GAME_START:
+                    return startGame(sender);
+
+                case GAME_SET:
+                    return setGame(sender, args);
+
+                //現在存在するチームを読み込む
+                case TEAM_SET:
+                    return setTeam(sender);
+            }
+        }
 
         return false;
     }
 
     //ゲーム実行
-    private boolean gameStart(CommandSender sender) {
+    private boolean startGame(CommandSender sender) {
         ConfigData configData = ConfigData.getInstance();
 
         Map<String, LandingTeam> landingTeamList = this.gameManager.getLandingTeamList();
@@ -89,46 +89,33 @@ public final class BlockLandingPlugin extends JavaPlugin {
             landingTeam.getValue().setNextTurn();
         }
 
+        //todo: gameManagerを一回使うと2回目以降は既にスケジュールされてるエラーがでる
         this.gameManager.runTaskTimer(this, 0, configData.getTaskRepeatTime());
         return false;
     }
 
     //コマンド実行者の足元のチェストを読み込み、引数のチームに登録する
-    private boolean gameSet(CommandSender sender, String[] args) {
-        //実行者がプレイヤーでないと足元のチェストが拾えないため
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(GameMessage.ERROR_CMD_SENDER_ERROR);
-            return false;
-        }
+    private boolean setGame(CommandSender sender, String[] args) {
 
-        //チームが必要
-        if (args.length != 2) {
-            sender.sendMessage(GameMessage.ERROR_NO_TEAM_CMD);
-            return false;
-        }
-
-        String teamName = args[1];
-        //指定チームが存在しない場合
-        if (!gameManager.getLandingTeamList().containsKey(teamName)) {
-            sender.sendMessage(GameMessage.getErrorNoTeamName(teamName));
+        if (!setCmdArgsCheck(sender, args)) {
             return false;
         }
 
         //プレイヤーの足元のブロックを取得
         Location location = ((Player) sender).getLocation();
-        location.add(0, -0.1, 0);
-        Block footBlock = location.getBlock();
+        Block footBlock = location.add(0, -0.1, 0).getBlock();
         if (footBlock.getType() != Material.CHEST) {
             sender.sendMessage(GameMessage.ERROR_NOT_CHEST);
             return false;
         }
+
         //チェストであれば、中身を取得してゲームに設定する
         Chest chest = (Chest) footBlock.getState();
         Inventory inv = chest.getInventory();
 
         Map<Integer, ItemStack> items = getItems(inv);
-        Map<String, LandingTeam> landingTeamList = gameManager.getLandingTeamList();
-        landingTeamList.get(teamName).setItemList(getItems(inv));
+        String teamName = args[1];
+        gameManager.getLandingTeamList().get(teamName).setItemList(items);
 
         int sum = 0;
         for (ItemStack item : items.values()) {
@@ -139,7 +126,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
     }
 
     //現在のチームを読み込む
-    private boolean teamSet(CommandSender sender) {
+    private boolean setTeam(CommandSender sender) {
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         Scoreboard board = manager.getMainScoreboard();
         Set<Team> teams = board.getTeams();
@@ -171,5 +158,27 @@ public final class BlockLandingPlugin extends JavaPlugin {
             items.put(i, targetItem);
         }
         return items;
+    }
+
+    private boolean setCmdArgsCheck(CommandSender sender, String[] args) {
+        //実行者がプレイヤーでないと足元のチェストが拾えないため
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(GameMessage.ERROR_CMD_SENDER_ERROR);
+            return false;
+        }
+
+        //チームが必要
+        if (args.length != 2) {
+            sender.sendMessage(GameMessage.ERROR_NO_TEAM_CMD);
+            return false;
+        }
+
+        String teamName = args[1];
+        //指定チームが存在しない場合
+        if (!gameManager.getLandingTeamList().containsKey(teamName)) {
+            sender.sendMessage(GameMessage.getErrorNoTeamName(teamName));
+            return false;
+        }
+        return true;
     }
 }

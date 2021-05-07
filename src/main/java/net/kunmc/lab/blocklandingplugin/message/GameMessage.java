@@ -10,14 +10,14 @@ public class GameMessage {
     public static final String ERROR_NO_TEAM_CMD = LANDING + "チーム名の指定がありません";
 
     public static String getErrorNoTeamName(String teamName){
-        return "チーム「" + teamName + "」は存在しません";
+        return LANDING + "チーム「" + teamName + "」は存在しません";
     }
 
     public static String getLoadingChest(int sum){
-        return "チェストの中身を読み込みました（" + sum + "個）";
+        return LANDING + "チェストの中身を読み込みました（" + sum + "個）";
     }
 
     public static String getLoadingTeam(String teamNames){
-        return "チームを読み込みました（" + teamNames + "）";
+        return LANDING + "チームを読み込みました（" + teamNames + "）";
     }
 }

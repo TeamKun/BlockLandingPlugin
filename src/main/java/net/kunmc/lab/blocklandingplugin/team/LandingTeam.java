@@ -1,8 +1,11 @@
 package net.kunmc.lab.blocklandingplugin.team;
 
+import net.kunmc.lab.blocklandingplugin.ConfigData;
 import net.kunmc.lab.blocklandingplugin.team.turn.LandingTurn;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Team;
@@ -53,16 +56,18 @@ public final class LandingTeam {
         return this;
     }
 
-    public boolean hasLandingTurn() {
+    public boolean hasNextTurn() {
         return this.itemIterator.hasNext();
     }
 
     //次のブロックとプレイヤーの設定
+    //次のターンがない場合null
     public void setNextTurn() {
+        this.currentTurn = null;
         //プレイヤー設定
         //リストの最後までいった場合初期化
         Player currentPlayer;
-        if (this.hasLandingTurn()) {
+        if (this.hasNextTurn()) {
             //オンラインプレイヤーを割り当て
             //memo: 危ないかな…でもチームに一人も有効な人がいない場合以外無限ループしないので、エラールート作るほどのリスクはないような…
             while (true) {
@@ -74,11 +79,25 @@ public final class LandingTeam {
                     break;
                 }
             }
-            this.currentTurn = new LandingTurn(currentPlayer, currentPlayer.getLocation().getBlock(), this.itemIterator.next());
+            Block block = currentPlayer.getLocation().getBlock();
+            Location location = block.getLocation();
+            location.setY(ConfigData.getInstance().getStartY());
+            this.currentTurn = new LandingTurn(currentPlayer, location.getBlock(), this.itemIterator.next());
         }
     }
 
     public LandingTurn getCurrentTurn() {
         return this.currentTurn;
+    }
+
+    public void sendTitleToTeamMember(String message) {
+        Iterator<String> targetPlayerNamesIterator = teamPlayerNames.iterator();
+        Player targetPlayer;
+        while (targetPlayerNamesIterator.hasNext()) {
+            targetPlayer = Bukkit.getPlayer(targetPlayerNamesIterator.next());
+            if (targetPlayer != null) {
+                targetPlayer.sendTitle(message, "", 10, 80, 10);
+            }
+        }
     }
 }
