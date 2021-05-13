@@ -89,7 +89,6 @@ public final class BlockLandingPlugin extends JavaPlugin {
             landingTeam.getValue().setNextTurn();
         }
 
-        //todo: gameManagerを一回使うと2回目以降は既にスケジュールされてるエラーがでる
         gameManager.runTaskTimer(this, 0, configData.getTaskRepeatTime());
         return false;
     }

@@ -63,7 +63,7 @@ public final class LandingTeam {
     }
 
     public boolean hasNextTurn() {
-        return this.itemIterator.hasNext();
+        return this.currentTurn != null;
     }
 
     //次のブロックとプレイヤーの設定
@@ -73,9 +73,8 @@ public final class LandingTeam {
         //プレイヤー設定
         //リストの最後までいった場合初期化
         Player currentPlayer;
-        if (this.hasNextTurn()) {
+        if (this.itemIterator.hasNext()) {
             //オンラインプレイヤーを割り当て
-            //memo: 危ないかな…でもチームに一人も有効な人がいない場合以外無限ループしないので、エラールート作るほどのリスクはないような…
             while (true) {
                 if (!this.playerNamesIterator.hasNext()) {
                     this.playerNamesIterator = teamPlayerNames.iterator();
