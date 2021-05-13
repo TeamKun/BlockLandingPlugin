@@ -36,6 +36,12 @@ public final class LandingTeam {
         this.playerNamesIterator = teamPlayerNames.iterator();
     }
 
+    public void reset(){
+        currentTurn = null;
+        itemIterator = itemList.iterator();
+        playerNamesIterator = teamPlayerNames.iterator();
+    }
+
     public LandingTeam setItemList(Map<Integer, ItemStack> itemList) {
         this.itemList = new ArrayList<>();
         for (Map.Entry<Integer, ItemStack> item : itemList.entrySet()) {

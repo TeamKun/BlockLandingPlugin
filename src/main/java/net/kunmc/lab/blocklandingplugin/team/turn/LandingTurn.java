@@ -28,6 +28,11 @@ public class LandingTurn {
         return this.block;
     }
 
+    public LandingTurn setBlock(Block block){
+        this.block = block;
+        return this;
+    }
+
     public Material getMaterial() {
         return this.material;
     }

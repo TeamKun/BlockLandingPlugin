@@ -14,7 +14,7 @@ import java.util.*;
 
 public class GameManager extends BukkitRunnable {
 
-    private static Map<String, LandingTeam> landingTeamList;
+    private Map<String, LandingTeam> landingTeamList;
 
     public void setLandingTeamList(Map<String, LandingTeam> landingTeamList) {
         this.landingTeamList = landingTeamList;
@@ -55,8 +55,10 @@ public class GameManager extends BukkitRunnable {
             if (nextBlock.getType() != Material.AIR) {
                 nextBlock = nextBlock.getLocation().add(0, 1, 0).getBlock();
             }
+
             //ブロック具現化
             nextBlock.setType(material);
+            currentTurn.setBlock(nextBlock);
             block = nextBlock;
 
             //当り判定
@@ -80,6 +82,7 @@ public class GameManager extends BukkitRunnable {
 
         if (!isGaming) {
             cancel();
+            landingTeamList.forEach((teamName,team)->team.reset());
         }
     }
 

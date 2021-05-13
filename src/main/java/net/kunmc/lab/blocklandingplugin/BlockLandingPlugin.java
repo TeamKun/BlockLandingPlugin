@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 public final class BlockLandingPlugin extends JavaPlugin {
 
-    private GameManager gameManager;
+    private Map<String, LandingTeam> landingTeamList;
 
     @Override
     public void onEnable() {
@@ -34,7 +34,6 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
         configData.setStartY(startY);
         configData.setTaskRepeatTime(taskRepeatTime);
-        this.gameManager = new GameManager();
     }
 
     @Override
@@ -82,15 +81,16 @@ public final class BlockLandingPlugin extends JavaPlugin {
     //ゲーム実行
     private boolean startGame(CommandSender sender) {
         ConfigData configData = ConfigData.getInstance();
-
-        Map<String, LandingTeam> landingTeamList = this.gameManager.getLandingTeamList();
+        GameManager gameManager = new GameManager();
+        gameManager.setLandingTeamList(landingTeamList);
+        Map<String, LandingTeam> landingTeamList = gameManager.getLandingTeamList();
         //最初の1ターン目を生成しておく
         for (Map.Entry<String, LandingTeam> landingTeam : landingTeamList.entrySet()) {
             landingTeam.getValue().setNextTurn();
         }
 
         //todo: gameManagerを一回使うと2回目以降は既にスケジュールされてるエラーがでる
-        this.gameManager.runTaskTimer(this, 0, configData.getTaskRepeatTime());
+        gameManager.runTaskTimer(this, 0, configData.getTaskRepeatTime());
         return false;
     }
 
@@ -115,7 +115,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
         Map<Integer, ItemStack> items = getItems(inv);
         String teamName = args[1];
-        gameManager.getLandingTeamList().get(teamName).setItemList(items);
+        this.landingTeamList.get(teamName).setItemList(items);
 
         int sum = 0;
         for (ItemStack item : items.values()) {
@@ -139,7 +139,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
             landingTeamList.put(targetTeam.getName(), landingTeam);
             teamNames.add(targetTeam.getName());
         }
-        gameManager.setLandingTeamList(landingTeamList);
+        this.landingTeamList = landingTeamList;
         sender.sendMessage(GameMessage.getLoadingTeam(teamNames.stream().collect(Collectors.joining("、"))));
         return false;
     }
@@ -175,7 +175,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
         String teamName = args[1];
         //指定チームが存在しない場合
-        if (!gameManager.getLandingTeamList().containsKey(teamName)) {
+        if (!this.landingTeamList.containsKey(teamName)) {
             sender.sendMessage(GameMessage.getErrorNoTeamName(teamName));
             return false;
         }
