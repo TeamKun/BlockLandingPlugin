@@ -6,4 +6,17 @@ authors: [sudo]
 description: 建材落下プラグイン
 commands:
     landing:
-        description: 建材落下ゲームを始めます。
+        usage: |-
+            /landing team - 現在のチーム構成を読み込みます。
+            /landing set [teamName] - 足元のチェストをteamNameに設定します。
+            /landing start - ゲームを開始します。
+    permissions:
+        landing.start:
+            description: 建材落下ゲームを始めます。
+            default: op
+        landing.team:
+            description: 現在のチーム構成を読み込みます。
+            default: op
+        landing.set:
+            description: 足元のチェスト指定のチームに設定します。
+            default: op
