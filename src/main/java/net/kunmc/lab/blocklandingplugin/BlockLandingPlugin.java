@@ -25,6 +25,18 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
     private Map<String, LandingTeam> landingTeamList;
 
+    //ゲームコマンド
+    private final String CMD = "landing";
+
+    //ゲーム開始コマンド
+    private final String GAME_START = "start";
+
+    //ゲーム設定コマンド
+    private final String GAME_SET = "set";
+
+    //チーム設定コマンド
+    private final String TEAM_SET = "team";
+
     @Override
     public void onEnable() {
         FileConfiguration config = getConfig();
@@ -44,17 +56,6 @@ public final class BlockLandingPlugin extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 
-        //ゲームコマンド
-        final String CMD = "landing";
-
-        //ゲーム開始コマンド
-        final String GAME_START = "start";
-
-        //ゲーム設定コマンド
-        final String GAME_SET = "set";
-
-        //チーム設定コマンド
-        final String TEAM_SET = "team";
 
         if (cmd.getName().equals(CMD)) {
             if (args.length < 1) {
@@ -75,7 +76,25 @@ public final class BlockLandingPlugin extends JavaPlugin {
             }
         }
 
-        return false;
+        return true;
+    }
+
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        ArrayList<String> completes = new ArrayList<>();
+
+        if (!command.getName().equalsIgnoreCase(CMD)) return super.onTabComplete(sender, command, alias, args);
+
+        if (!sender.hasPermission(CMD)) {
+            return new ArrayList<>();
+        }
+
+        if (args.length == 1) {
+            completes.add(GAME_START);
+            completes.add(GAME_SET);
+            completes.add(TEAM_SET);
+        }
+
+        return completes;
     }
 
     //ゲーム実行
@@ -90,7 +109,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
         }
 
         gameManager.runTaskTimer(this, 0, configData.getTaskRepeatTime());
-        return false;
+        return true;
     }
 
     //コマンド実行者の足元のチェストを読み込み、引数のチームに登録する
@@ -121,7 +140,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
             sum += item.getAmount();
         }
         sender.sendMessage(GameMessage.getLoadingChest(sum));
-        return false;
+        return true;
     }
 
     //現在のチームを読み込む
@@ -140,7 +159,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
         }
         this.landingTeamList = landingTeamList;
         sender.sendMessage(GameMessage.getLoadingTeam(teamNames.stream().collect(Collectors.joining("、"))));
-        return false;
+        return true;
     }
 
     /**
