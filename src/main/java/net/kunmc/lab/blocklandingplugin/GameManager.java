@@ -6,8 +6,11 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.checkerframework.checker.i18n.qual.LocalizableKey;
 
 import java.util.*;
 
@@ -28,19 +31,20 @@ public class GameManager extends BukkitRunnable {
         boolean isGaming = false;
         Boolean isSneaking;
         //各チームに対して順番に処理を行う
-        teamLavel: for (Map.Entry<String, LandingTeam> landingTeam : landingTeamList.entrySet()) {
+        teamLavel:
+        for (Map.Entry<String, LandingTeam> landingTeam : landingTeamList.entrySet()) {
 
-                if (!landingTeam.getValue().hasNextTurn()) {
-                    continue;
-                }
+            if (!landingTeam.getValue().hasNextTurn()) {
+                continue;
+            }
 
-                //ブロック・プレイヤー読み込み
-                LandingTurn currentTurn = landingTeam.getValue().getCurrentTurn();
-                Block block = currentTurn.getBlock();
-                Player player = currentTurn.getPlayer();
-                Material material = currentTurn.getMaterial();
+            //ブロック・プレイヤー読み込み
+            LandingTurn currentTurn = landingTeam.getValue().getCurrentTurn();
+            Block block = currentTurn.getBlock();
+            Player player = currentTurn.getPlayer();
+            Material material = currentTurn.getMaterial();
 
-            do{
+            do {
                 //次のブロックの位置決め
                 Location nextLocation = block.getLocation();
                 if (landingTeam.getValue().getCount() % 2 == 0) {
@@ -59,7 +63,7 @@ public class GameManager extends BukkitRunnable {
                 }
 
                 //ブロック具現化
-                nextBlock.setType(material);
+                nextBlock.setType(material, false);
                 currentTurn.setBlock(nextBlock);
                 block = nextBlock;
 
@@ -76,19 +80,33 @@ public class GameManager extends BukkitRunnable {
                     //次の準備
                     landingTeam.getValue().setNextTurn();
                     if (!landingTeam.getValue().hasNextTurn()) {
+                        if(isDoor(material)){
+                            setTopDoor(nextLocation, material);
+                        }
                         landingTeam.getValue().sendTitleToTeamMember("完成！");
                         continue teamLavel;
                     }
                 }
+                if (isDoor(material)) {
+                    setTopDoor(nextLocation, material);
+                }
                 isGaming = true;
                 landingTeam.getValue().addTurnCount();
-            }while(isSneaking);
+            } while (isSneaking);
         }
 
         if (!isGaming) {
             cancel();
-            landingTeamList.forEach((teamName,team)->team.reset());
+            landingTeamList.forEach((teamName, team) -> team.reset());
         }
+    }
+
+    private void setTopDoor(Location nextLocation, Material material) {
+        Location topDoorLocation = nextLocation.clone();
+        Block topDoorBlock = topDoorLocation.add(0, 1, 0).getBlock();
+        Door doorData = ((Door) material.createBlockData());
+        doorData.setHalf(Bisected.Half.TOP);
+        topDoorBlock.setBlockData(doorData);
     }
 
     /**
@@ -109,6 +127,24 @@ public class GameManager extends BukkitRunnable {
             if (myBlock.getType() != Material.AIR) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * ドアブロックか判定
+     */
+    private boolean isDoor(Material material) {
+        if (material == Material.BIRCH_DOOR ||
+                material == Material.ACACIA_DOOR ||
+                material == Material.DARK_OAK_DOOR ||
+                material == Material.CRIMSON_DOOR ||
+                material == Material.IRON_DOOR ||
+                material == Material.JUNGLE_DOOR ||
+                material == Material.OAK_DOOR ||
+                material == Material.WARPED_DOOR ||
+                material == Material.SPRUCE_DOOR) {
+            return true;
         }
         return false;
     }
