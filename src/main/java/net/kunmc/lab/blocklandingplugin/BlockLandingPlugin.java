@@ -39,6 +39,9 @@ public final class BlockLandingPlugin extends JavaPlugin {
     //チーム設定コマンド
     private final String TEAM_SET = "team";
 
+    //コンフィグ変更コマンド
+    private final String CONFIG_SET = "config";
+
     @Override
     public void onEnable() {
         FileConfiguration config = getConfig();
@@ -48,6 +51,15 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
         configData.setStartY(startY);
         configData.setTaskRepeatTime(taskRepeatTime);
+    }
+
+    public void configUpdate() {
+        FileConfiguration config = getConfig();
+        ConfigData configData = ConfigData.getInstance();
+
+        config.set("startY", configData.getStartY());
+        config.set("taskRepeatTime", configData.getTaskRepeatTime());
+        saveConfig();
     }
 
     @Override
@@ -75,6 +87,10 @@ public final class BlockLandingPlugin extends JavaPlugin {
                 //現在存在するチームを読み込む
                 case TEAM_SET:
                     return setTeam(sender);
+
+                case CONFIG_SET:
+                    setConfig(sender, args);
+                    break;
             }
         }
 
@@ -112,6 +128,42 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
         gameManager.runTaskTimer(this, 0, configData.getTaskRepeatTime());
         return true;
+    }
+
+    private boolean canStart(CommandSender sender){
+        //チームが読み込まれていない
+        if(landingTeamList == null || landingTeamList.size() == 0){
+            sender.sendMessage(GameMessage.ERROR_CANT_START);
+            return false;
+        }
+
+        for (ItemStack item : items.values()) {
+        for(LandingTeam landingTeam : landingTeamList.values() -> inde)
+        if (landingTeamList.) {
+            //チームにアイテムが読み込まれていない
+            sender.sendMessage(GameMessage.ERROR_NO_TEAM_ITEM);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void setConfig(CommandSender sender, String[] args) {
+        if (args.length != 2) {
+            return;
+        }
+        String[] temp = args[1].split("=");
+        if (temp.length == 2) {
+            if (ConfigData.TASK_REPEAT_TIME_STRING.equals(temp[0])) {
+                sender.sendMessage(GameMessage.getConfigSet(ConfigData.TASK_REPEAT_TIME_STRING));
+                ConfigData.getInstance().setTaskRepeatTime(Integer.parseInt(temp[1]));
+
+            } else if (ConfigData.START_Y_STRING.equals(temp[0])) {
+                sender.sendMessage(GameMessage.getConfigSet(ConfigData.START_Y_STRING));
+                ConfigData.getInstance().setStartY(Integer.parseInt(temp[1]));
+            }
+            configUpdate();
+        }
     }
 
     //コマンド実行者の足元のチェストを読み込み、引数のチームに登録する
@@ -154,6 +206,9 @@ public final class BlockLandingPlugin extends JavaPlugin {
         List<String> teamNames = new ArrayList<>();
         Map<String, LandingTeam> landingTeamList = new HashMap<>();
 
+        if (teams.size() == 0) {
+            sender.sendMessage(GameMessage.ERROR_CANT_START);
+        }
         for (Team targetTeam : teams) {
             LandingTeam landingTeam = new LandingTeam(targetTeam.getEntries().stream().collect(Collectors.toSet()), targetTeam.getName());
             landingTeamList.put(targetTeam.getName(), landingTeam);

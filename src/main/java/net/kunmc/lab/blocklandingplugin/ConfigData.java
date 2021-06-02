@@ -7,6 +7,7 @@ public class ConfigData {
      * 人の位置+startYからスタートする
      */
     public static final String START_Y_STRING = "startY";
+    public static final String TASK_REPEAT_TIME_STRING = "taskRepeatTime";
 
     private int startY;
 

@@ -10,7 +10,6 @@ import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.checkerframework.checker.i18n.qual.LocalizableKey;
 
 import java.util.*;
 
@@ -80,7 +79,7 @@ public class GameManager extends BukkitRunnable {
                     //次の準備
                     landingTeam.getValue().setNextTurn();
                     if (!landingTeam.getValue().hasNextTurn()) {
-                        if(isDoor(material)){
+                        if (isDoor(material)) {
                             setTopDoor(nextLocation, material);
                         }
                         landingTeam.getValue().sendTitleToTeamMember("完成！");
