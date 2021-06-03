@@ -57,7 +57,7 @@ public final class LandingTeam {
         return this;
     }
 
-    public int getCount() {
+    public int getTurnCount() {
         return this.turnCount;
     }
 

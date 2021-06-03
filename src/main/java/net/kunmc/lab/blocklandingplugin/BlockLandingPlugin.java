@@ -44,8 +44,8 @@ public final class BlockLandingPlugin extends JavaPlugin {
     public void onEnable() {
         FileConfiguration config = getConfig();
         ConfigData configData = ConfigData.getInstance();
-        int startY = Integer.parseInt(config.getString("startY"));
-        int taskRepeatTime = Integer.parseInt(config.getString("taskRepeatTime"));
+        int startY = Integer.parseInt(config.getString(ConfigData.START_Y_STRING));
+        int taskRepeatTime = Integer.parseInt(config.getString(ConfigData.START_Y_STRING));
 
         configData.setStartY(startY);
         configData.setTaskRepeatTime(taskRepeatTime);
@@ -107,6 +107,13 @@ public final class BlockLandingPlugin extends JavaPlugin {
             completes.add(GAME_START);
             completes.add(GAME_SET);
             completes.add(TEAM_SET);
+            completes.add(CONFIG_SET);
+        }
+        if (args.length == 2) {
+            if (CONFIG_SET.equals(args[0])) {
+                completes.add(ConfigData.START_Y_STRING);
+                completes.add(ConfigData.TASK_REPEAT_TIME_STRING);
+            }
         }
 
         return completes;
@@ -154,21 +161,19 @@ public final class BlockLandingPlugin extends JavaPlugin {
     }
 
     private void setConfig(CommandSender sender, String[] args) {
-        if (args.length != 2) {
+        if (args.length != 3) {
+            sender.sendMessage(GameMessage.ERROR_LESS_ARGS);
             return;
         }
-        String[] temp = args[1].split("=");
-        if (temp.length == 2) {
-            if (ConfigData.TASK_REPEAT_TIME_STRING.equals(temp[0])) {
-                sender.sendMessage(GameMessage.getConfigSet(ConfigData.TASK_REPEAT_TIME_STRING));
-                ConfigData.getInstance().setTaskRepeatTime(Integer.parseInt(temp[1]));
+        if (ConfigData.TASK_REPEAT_TIME_STRING.equals(args[1])) {
+            sender.sendMessage(GameMessage.getConfigSet(ConfigData.TASK_REPEAT_TIME_STRING));
+            ConfigData.getInstance().setTaskRepeatTime(Integer.parseInt(args[2]));
 
-            } else if (ConfigData.START_Y_STRING.equals(temp[0])) {
-                sender.sendMessage(GameMessage.getConfigSet(ConfigData.START_Y_STRING));
-                ConfigData.getInstance().setStartY(Integer.parseInt(temp[1]));
-            }
-            configUpdate();
+        } else if (ConfigData.START_Y_STRING.equals(args[1])) {
+            sender.sendMessage(GameMessage.getConfigSet(ConfigData.START_Y_STRING));
+            ConfigData.getInstance().setStartY(Integer.parseInt(args[2]));
         }
+        configUpdate();
     }
 
     //コマンド実行者の足元のチェストを読み込み、引数のチームに登録する
@@ -250,6 +255,11 @@ public final class BlockLandingPlugin extends JavaPlugin {
         //チームが必要
         if (args.length != 2) {
             sender.sendMessage(GameMessage.ERROR_NO_TEAM_CMD);
+            return false;
+        }
+
+        if (this.landingTeamList == null) {
+            sender.sendMessage(GameMessage.ERROR_NONE_TEAM_CMD);
             return false;
         }
 

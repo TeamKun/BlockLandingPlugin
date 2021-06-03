@@ -8,6 +8,7 @@ public class GameMessage {
     public static final String ERROR_NOT_CHEST = LANDING + "足元のブロックがチェストではありません";
     public static final String ERROR_CANT_START = LANDING + "チームが存在しません";
     public static final String ERROR_NO_TEAM_CMD = LANDING + "チーム名の指定がありません";
+    public static final String ERROR_NONE_TEAM_CMD = LANDING + "チームが読み込まれていません";
 
 
     public static String getConfigSet(String itemName) {

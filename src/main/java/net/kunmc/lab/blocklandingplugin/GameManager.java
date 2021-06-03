@@ -2,9 +2,11 @@ package net.kunmc.lab.blocklandingplugin;
 
 import net.kunmc.lab.blocklandingplugin.team.LandingTeam;
 import net.kunmc.lab.blocklandingplugin.team.turn.LandingTurn;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.type.Door;
@@ -32,7 +34,7 @@ public class GameManager extends BukkitRunnable {
 
     public void run() {
         boolean isGaming = false;
-        Boolean isSneaking;
+        boolean isSneaking;
         ConfigData configData = ConfigData.getInstance();
 
         //各チームに対して順番に処理を行う
@@ -48,12 +50,16 @@ public class GameManager extends BukkitRunnable {
             Block block = currentTurn.getBlock();
             Player player = currentTurn.getPlayer();
             player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, configData.getTaskRepeatTime(), POTION_EFFECT_LEVEL));
+            player.sendActionBar(Component.text("あなたのターンです！ブロック落下中！"));
+            if (landingTeam.getValue().getTurnCount() == 0) {
+                player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1, 1);
+            }
             Material material = currentTurn.getMaterial();
 
             do {
                 //次のブロックの位置決め
                 Location nextLocation = block.getLocation();
-                if (landingTeam.getValue().getCount() % 2 == 0) {
+                if (landingTeam.getValue().getTurnCount() % 2 == 0) {
                     nextLocation.add(0, -1, 0);
                 }
                 nextLocation.setX(player.getLocation().getX());
