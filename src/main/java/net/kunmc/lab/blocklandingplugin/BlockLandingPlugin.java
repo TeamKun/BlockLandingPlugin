@@ -7,8 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
-import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.type.Door;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -70,7 +68,6 @@ public final class BlockLandingPlugin extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 
-
         if (cmd.getName().equals(CMD)) {
             if (args.length < 1) {
                 sender.sendMessage(GameMessage.ERROR_LESS_ARGS);
@@ -120,6 +117,10 @@ public final class BlockLandingPlugin extends JavaPlugin {
         ConfigData configData = ConfigData.getInstance();
         GameManager gameManager = new GameManager();
         gameManager.setLandingTeamList(landingTeamList);
+        if (!canStart(sender)) {
+            return true;
+        }
+
         Map<String, LandingTeam> landingTeamList = gameManager.getLandingTeamList();
         //最初の1ターン目を生成しておく
         for (Map.Entry<String, LandingTeam> landingTeam : landingTeamList.entrySet()) {
@@ -130,18 +131,22 @@ public final class BlockLandingPlugin extends JavaPlugin {
         return true;
     }
 
-    private boolean canStart(CommandSender sender){
+    private boolean canStart(CommandSender sender) {
         //チームが読み込まれていない
-        if(landingTeamList == null || landingTeamList.size() == 0){
+        if (landingTeamList == null || landingTeamList.size() == 0) {
             sender.sendMessage(GameMessage.ERROR_CANT_START);
             return false;
         }
 
-        for (ItemStack item : items.values()) {
-        for(LandingTeam landingTeam : landingTeamList.values() -> inde)
-        if (landingTeamList.) {
-            //チームにアイテムが読み込まれていない
-            sender.sendMessage(GameMessage.ERROR_NO_TEAM_ITEM);
+        //アイテムが設定されていないチームがある
+        boolean noItem = false;
+        for (LandingTeam landingTeam : landingTeamList.values()) {
+            if (!landingTeam.hasItem()) {
+                sender.sendMessage(GameMessage.getErrorNoItem(landingTeam.getTeamName()));
+                noItem = true;
+            }
+        }
+        if (noItem) {
             return false;
         }
 

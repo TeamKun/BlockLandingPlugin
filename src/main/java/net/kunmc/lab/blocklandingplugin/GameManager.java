@@ -9,6 +9,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
@@ -17,6 +19,8 @@ import java.util.*;
 public class GameManager extends BukkitRunnable {
 
     private Map<String, LandingTeam> landingTeamList;
+
+    private int POTION_EFFECT_LEVEL = 4;
 
     public void setLandingTeamList(Map<String, LandingTeam> landingTeamList) {
         this.landingTeamList = landingTeamList;
@@ -29,6 +33,8 @@ public class GameManager extends BukkitRunnable {
     public void run() {
         boolean isGaming = false;
         Boolean isSneaking;
+        ConfigData configData = ConfigData.getInstance();
+
         //各チームに対して順番に処理を行う
         teamLavel:
         for (Map.Entry<String, LandingTeam> landingTeam : landingTeamList.entrySet()) {
@@ -41,6 +47,7 @@ public class GameManager extends BukkitRunnable {
             LandingTurn currentTurn = landingTeam.getValue().getCurrentTurn();
             Block block = currentTurn.getBlock();
             Player player = currentTurn.getPlayer();
+            player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, configData.getTaskRepeatTime(), POTION_EFFECT_LEVEL));
             Material material = currentTurn.getMaterial();
 
             do {

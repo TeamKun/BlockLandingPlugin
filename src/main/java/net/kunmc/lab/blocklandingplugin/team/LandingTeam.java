@@ -36,10 +36,14 @@ public final class LandingTeam {
         this.playerNamesIterator = teamPlayerNames.iterator();
     }
 
-    public void reset(){
+    public void reset() {
         currentTurn = null;
         itemIterator = itemList.iterator();
         playerNamesIterator = teamPlayerNames.iterator();
+    }
+
+    public String getTeamName() {
+        return teamName;
     }
 
     public LandingTeam setItemList(Map<Integer, ItemStack> itemList) {
@@ -64,6 +68,10 @@ public final class LandingTeam {
 
     public boolean hasNextTurn() {
         return this.currentTurn != null;
+    }
+
+    public boolean hasItem() {
+        return this.itemIterator.hasNext();
     }
 
     //次のブロックとプレイヤーの設定
