@@ -10,6 +10,5 @@ minecraft version: 1.16.5
     * team名
   * start
   * config (基本的に変更の必要なし)
-      * YawBorderDegree
-      * PitchBorderDegree
-      * ToggleRightClickTick
+      * startY
+      * taskRepeatTime
