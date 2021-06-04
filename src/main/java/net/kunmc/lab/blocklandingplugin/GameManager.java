@@ -51,7 +51,8 @@ public class GameManager extends BukkitRunnable {
             Player player = currentTurn.getPlayer();
             player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, configData.getTaskRepeatTime(), POTION_EFFECT_LEVEL));
             player.sendActionBar(Component.text("あなたのターンです！ブロック落下中！"));
-            if (landingTeam.getValue().getTurnCount() == 0) {
+            if (landingTeam.getValue().isFirst()) {
+                landingTeam.getValue().setIsFirst(false);
                 player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1, 1);
             }
             Material material = currentTurn.getMaterial();
@@ -82,7 +83,7 @@ public class GameManager extends BukkitRunnable {
                 isSneaking = player.isSneaking();
                 //当り判定
                 //どこかに引っかかっていれば次のターンへ
-                if (isHittingNextBlock(block)) {
+                if (isHittingNextBlock(block, isSneaking)) {
                     nextLocation.getWorld().spawnParticle(
                             Particle.SPELL_MOB,
                             nextLocation,
@@ -123,17 +124,20 @@ public class GameManager extends BukkitRunnable {
 
     /**
      * 上下左右にブロックがあるか確認する
+     * スニーク中は下まで落下する
      */
-    private boolean isHittingNextBlock(Block block) {
+    private boolean isHittingNextBlock(Block block, boolean isSneaking) {
         Location location = block.getLocation();
         List<Block> blockList = new ArrayList<Block>();
 
+        if (!isSneaking) {
+            blockList.add(location.clone().add(0, 1, 0).getBlock());
+            blockList.add(location.clone().add(-1, 0, 0).getBlock());
+            blockList.add(location.clone().add(1, 0, 0).getBlock());
+            blockList.add(location.clone().add(0, 0, -1).getBlock());
+            blockList.add(location.clone().add(0, 0, 1).getBlock());
+        }
         blockList.add(location.clone().add(0, -1, 0).getBlock());
-        blockList.add(location.clone().add(0, 1, 0).getBlock());
-        blockList.add(location.clone().add(-1, 0, 0).getBlock());
-        blockList.add(location.clone().add(1, 0, 0).getBlock());
-        blockList.add(location.clone().add(0, 0, -1).getBlock());
-        blockList.add(location.clone().add(0, 0, 1).getBlock());
 
         for (Block myBlock : blockList) {
             if (myBlock.getType() != Material.AIR) {

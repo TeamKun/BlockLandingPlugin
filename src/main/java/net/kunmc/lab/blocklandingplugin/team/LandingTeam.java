@@ -29,6 +29,7 @@ public final class LandingTeam {
     private LandingTurn currentTurn;
 
     private int turnCount;
+    private boolean isFirst;
 
     public LandingTeam(Set<String> teamPlayerNames, String teamName) {
         this.teamName = teamName;
@@ -44,6 +45,14 @@ public final class LandingTeam {
 
     public String getTeamName() {
         return teamName;
+    }
+
+    public boolean isFirst(){
+        return isFirst;
+    }
+
+    public void setIsFirst(boolean isFirst){
+        this.isFirst = isFirst;
     }
 
     public LandingTeam setItemList(Map<Integer, ItemStack> itemList) {
@@ -78,6 +87,7 @@ public final class LandingTeam {
     //次のターンがない場合null
     public void setNextTurn() {
         this.currentTurn = null;
+        this.isFirst = true;
         //プレイヤー設定
         //リストの最後までいった場合初期化
         Player currentPlayer;
