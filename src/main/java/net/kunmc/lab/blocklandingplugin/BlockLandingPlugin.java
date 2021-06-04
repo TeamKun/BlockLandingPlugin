@@ -40,6 +40,11 @@ public final class BlockLandingPlugin extends JavaPlugin {
     //コンフィグ変更コマンド
     private final String CONFIG_SET = "config";
 
+    //ゲームリセット
+    private final String RESET = "reset";
+
+    public static boolean reset = false;
+
     @Override
     public void onEnable() {
         FileConfiguration config = getConfig();
@@ -84,7 +89,9 @@ public final class BlockLandingPlugin extends JavaPlugin {
                 //現在存在するチームを読み込む
                 case TEAM_SET:
                     return setTeam(sender);
-
+                case RESET:
+                    reset = true;
+                    break;
                 case CONFIG_SET:
                     setConfig(sender, args);
                     break;
@@ -108,6 +115,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
             completes.add(GAME_SET);
             completes.add(TEAM_SET);
             completes.add(CONFIG_SET);
+            completes.add(RESET);
         }
         if (args.length == 2) {
             if (CONFIG_SET.equals(args[0])) {

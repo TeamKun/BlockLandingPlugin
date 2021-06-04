@@ -105,6 +105,11 @@ public class GameManager extends BukkitRunnable {
                 }
                 isGaming = true;
                 landingTeam.getValue().addTurnCount();
+                if(BlockLandingPlugin.reset){
+                    BlockLandingPlugin.reset = false;
+                    landingTeam.getValue().sendTitleToTeamMember("ゲームが中断されました");
+                    cancel();
+                }
             } while (isSneaking);
         }
 
