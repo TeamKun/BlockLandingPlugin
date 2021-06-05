@@ -9,6 +9,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -32,13 +33,20 @@ public class GameManager extends BukkitRunnable {
         return this.landingTeamList;
     }
 
+    private boolean isGaming;
+
+    public boolean getIsGaming(){
+        return isGaming;
+    }
+
     public void run() {
-        boolean isGaming = false;
         boolean isSneaking;
+        boolean endFlag = false;
         ConfigData configData = ConfigData.getInstance();
+        isGaming = true;
 
         //各チームに対して順番に処理を行う
-        teamLavel:
+        teamLabel:
         for (Map.Entry<String, LandingTeam> landingTeam : landingTeamList.entrySet()) {
 
             if (!landingTeam.getValue().hasNextTurn()) {
@@ -96,24 +104,32 @@ public class GameManager extends BukkitRunnable {
                         if (isDoor(material)) {
                             setTopDoor(nextLocation, material);
                         }
+                        if (isBed(material)) {
+                            setHeadBed(nextLocation, material);
+                        }
+                        isGaming = false;
                         landingTeam.getValue().sendTitleToTeamMember("完成！");
-                        continue teamLavel;
+                        continue teamLabel;
                     }
                 }
                 if (isDoor(material)) {
                     setTopDoor(nextLocation, material);
                 }
-                isGaming = true;
+                if (isBed(material)) {
+                    setHeadBed(nextLocation, material);
+                }
+                endFlag = true;
                 landingTeam.getValue().addTurnCount();
-                if(BlockLandingPlugin.reset){
+                if (BlockLandingPlugin.reset) {
                     BlockLandingPlugin.reset = false;
                     landingTeam.getValue().sendTitleToTeamMember("ゲームが中断されました");
+                    isGaming = false;
                     cancel();
                 }
             } while (isSneaking);
         }
 
-        if (!isGaming) {
+        if (!endFlag) {
             cancel();
             landingTeamList.forEach((teamName, team) -> team.reset());
         }
@@ -125,6 +141,14 @@ public class GameManager extends BukkitRunnable {
         Door doorData = ((Door) material.createBlockData());
         doorData.setHalf(Bisected.Half.TOP);
         topDoorBlock.setBlockData(doorData);
+    }
+
+    private void setHeadBed(Location nextLocation, Material material) {
+        Location headBedLocation = nextLocation.clone();
+        Block headBedBlock = headBedLocation.add(0, 0, -1).getBlock();
+        Bed bedData = ((Bed) material.createBlockData());
+        bedData.setPart(Bed.Part.HEAD);
+        headBedBlock.setBlockData(bedData);
     }
 
     /**
@@ -165,6 +189,32 @@ public class GameManager extends BukkitRunnable {
                 material == Material.OAK_DOOR ||
                 material == Material.WARPED_DOOR ||
                 material == Material.SPRUCE_DOOR) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * ベッドか判定
+     */
+    private boolean isBed(Material material) {
+        if (material == Material.BLACK_BED ||
+                material == Material.BLUE_BED ||
+                material == Material.BROWN_BED ||
+                material == Material.CYAN_BED ||
+                material == Material.GRAY_BED ||
+                material == Material.GREEN_BED ||
+                material == Material.LIGHT_BLUE_BED ||
+                material == Material.LIGHT_GRAY_BED ||
+                material == Material.LIME_BED ||
+                material == Material.MAGENTA_BED ||
+                material == Material.ORANGE_BED ||
+                material == Material.PINK_BED ||
+                material == Material.PURPLE_BED ||
+                material == Material.RED_BED ||
+                material == Material.WHITE_BED ||
+                material == Material.YELLOW_BED
+        ) {
             return true;
         }
         return false;

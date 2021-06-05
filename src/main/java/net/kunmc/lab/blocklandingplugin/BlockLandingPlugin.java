@@ -25,6 +25,8 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
     private Map<String, LandingTeam> landingTeamList;
 
+    private static GameManager gameManager;
+
     //ゲームコマンド
     private final String CMD = "landing";
 
@@ -45,6 +47,13 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
     public static boolean reset = false;
 
+    public static boolean isGaming() {
+        if (gameManager != null) {
+            return gameManager.getIsGaming();
+        }
+        return false;
+    }
+
     @Override
     public void onEnable() {
         FileConfiguration config = getConfig();
@@ -54,6 +63,8 @@ public final class BlockLandingPlugin extends JavaPlugin {
 
         configData.setStartY(startY);
         configData.setTaskRepeatTime(taskRepeatTime);
+
+        getServer().getPluginManager().registerEvents(new DropItemListener(), this);
     }
 
     public void configUpdate() {
@@ -89,9 +100,11 @@ public final class BlockLandingPlugin extends JavaPlugin {
                 //現在存在するチームを読み込む
                 case TEAM_SET:
                     return setTeam(sender);
+
                 case RESET:
                     reset = true;
                     break;
+
                 case CONFIG_SET:
                     setConfig(sender, args);
                     break;
@@ -130,7 +143,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
     //ゲーム実行
     private boolean startGame(CommandSender sender) {
         ConfigData configData = ConfigData.getInstance();
-        GameManager gameManager = new GameManager();
+        this.gameManager = new GameManager();
         gameManager.setLandingTeamList(landingTeamList);
         if (!canStart(sender)) {
             return true;
