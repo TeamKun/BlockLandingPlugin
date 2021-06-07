@@ -193,11 +193,11 @@ public final class BlockLandingPlugin extends JavaPlugin {
             return;
         }
         if (ConfigData.TASK_REPEAT_TIME_STRING.equals(args[1])) {
-            sender.sendMessage(GameMessage.getConfigSet(ConfigData.TASK_REPEAT_TIME_STRING));
+            sender.sendMessage(GameMessage.getConfigSet(ConfigData.TASK_REPEAT_TIME_STRING, Integer.parseInt(args[2])));
             ConfigData.getInstance().setTaskRepeatTime(Integer.parseInt(args[2]));
 
         } else if (ConfigData.START_Y_STRING.equals(args[1])) {
-            sender.sendMessage(GameMessage.getConfigSet(ConfigData.START_Y_STRING));
+            sender.sendMessage(GameMessage.getConfigSet(ConfigData.START_Y_STRING, Integer.parseInt(args[2])));
             ConfigData.getInstance().setStartY(Integer.parseInt(args[2]));
         }
         configUpdate();
@@ -265,6 +265,9 @@ public final class BlockLandingPlugin extends JavaPlugin {
             // アイテム取得
             ItemStack targetItem = inv.getItem(i);
             if (targetItem == null) {
+                continue;
+            }
+            if(!targetItem.getType().isBlock()){
                 continue;
             }
             items.put(i, targetItem);

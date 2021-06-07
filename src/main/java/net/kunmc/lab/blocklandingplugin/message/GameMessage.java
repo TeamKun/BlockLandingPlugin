@@ -11,8 +11,8 @@ public class GameMessage {
     public static final String ERROR_NONE_TEAM_CMD = LANDING + "チームが読み込まれていません";
 
 
-    public static String getConfigSet(String itemName) {
-        return LANDING + "コンフィグを更新しました（" + itemName + "）";
+    public static String getConfigSet(String itemName, int settingNumber) {
+        return LANDING + "コンフィグ[" + itemName + "]を[" + settingNumber + "]に更新しました";
     }
 
     public static String getErrorNoTeamName(String teamName) {
