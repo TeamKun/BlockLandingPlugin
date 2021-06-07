@@ -180,7 +180,7 @@ public class GameManager extends BukkitRunnable {
      * ドアブロックか判定
      */
     private boolean isDoor(Material material) {
-        if (material == Material.BIRCH_DOOR ||
+        return material == Material.BIRCH_DOOR ||
                 material == Material.ACACIA_DOOR ||
                 material == Material.DARK_OAK_DOOR ||
                 material == Material.CRIMSON_DOOR ||
@@ -188,17 +188,14 @@ public class GameManager extends BukkitRunnable {
                 material == Material.JUNGLE_DOOR ||
                 material == Material.OAK_DOOR ||
                 material == Material.WARPED_DOOR ||
-                material == Material.SPRUCE_DOOR) {
-            return true;
-        }
-        return false;
+                material == Material.SPRUCE_DOOR;
     }
 
     /**
      * ベッドか判定
      */
     private boolean isBed(Material material) {
-        if (material == Material.BLACK_BED ||
+        return material == Material.BLACK_BED ||
                 material == Material.BLUE_BED ||
                 material == Material.BROWN_BED ||
                 material == Material.CYAN_BED ||
@@ -213,10 +210,6 @@ public class GameManager extends BukkitRunnable {
                 material == Material.PURPLE_BED ||
                 material == Material.RED_BED ||
                 material == Material.WHITE_BED ||
-                material == Material.YELLOW_BED
-        ) {
-            return true;
-        }
-        return false;
+                material == Material.YELLOW_BED;
     }
 }

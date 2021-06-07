@@ -135,6 +135,12 @@ public final class BlockLandingPlugin extends JavaPlugin {
                 completes.add(ConfigData.START_Y_STRING);
                 completes.add(ConfigData.TASK_REPEAT_TIME_STRING);
             }
+
+            if(GAME_SET.equals(args[0])){
+                if(landingTeamList != null){
+                    completes.addAll(landingTeamList.keySet());
+                }
+            }
         }
 
         return completes;
