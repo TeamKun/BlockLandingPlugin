@@ -47,6 +47,16 @@ public final class LandingTeam {
         return teamName;
     }
 
+    public boolean hasTeamOnlineMember() {
+        for (String playerName : teamPlayerNames) {
+            Player currentPlayer = Bukkit.getPlayer(playerName);
+            if (currentPlayer != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isFirst() {
         return isFirst;
     }
@@ -80,6 +90,10 @@ public final class LandingTeam {
     }
 
     public boolean hasItem() {
+        if (this.itemIterator == null) {
+            return false;
+        }
+
         return this.itemIterator.hasNext();
     }
 

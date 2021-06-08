@@ -31,4 +31,8 @@ public class GameMessage {
         return LANDING + "チーム「" + teamName + "」にアイテムが設定されていません";
     }
 
+    public static String getNoTeamMember(String teamName) {
+        return LANDING + "チーム「" + teamName + "」にオンラインなメンバーがいません";
+    }
+
 }

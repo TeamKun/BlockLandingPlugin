@@ -107,6 +107,8 @@ public final class BlockLandingPlugin extends JavaPlugin {
                 case CONFIG_SET:
                     setConfig(sender, args);
                     break;
+                default:
+                    return false;
             }
         }
 
@@ -172,14 +174,19 @@ public final class BlockLandingPlugin extends JavaPlugin {
         }
 
         //アイテムが設定されていないチームがある
-        boolean noItem = false;
+        //メンバーがいないチームがある
+        boolean isError = false;
         for (LandingTeam landingTeam : landingTeamList.values()) {
             if (!landingTeam.hasItem()) {
                 sender.sendMessage(GameMessage.getErrorNoItem(landingTeam.getTeamName()));
-                noItem = true;
+                isError = true;
+            }
+            if(!landingTeam.hasTeamOnlineMember()){
+                sender.sendMessage(GameMessage.getNoTeamMember(landingTeam.getTeamName()));
+                isError = true;
             }
         }
-        if (noItem) {
+        if (isError) {
             return false;
         }
 
@@ -214,7 +221,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
         Block footBlock = location.add(0, -0.1, 0).getBlock();
         if (footBlock.getType() != Material.CHEST) {
             sender.sendMessage(GameMessage.ERROR_NOT_CHEST);
-            return false;
+            return true;
         }
 
         //チェストであれば、中身を取得してゲームに設定する

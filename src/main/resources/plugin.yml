@@ -10,6 +10,8 @@ commands:
             /landing team - 現在のチーム構成を読み込みます。
             /landing set [teamName] - 足元のチェストをteamNameに設定します。
             /landing start - ゲームを開始します。
+            /landing reset - 現在のゲームを中断します。
+            /landing config - 設定を変更します。
     permissions:
         landing.start:
             description: 建材落下ゲームを始めます。
