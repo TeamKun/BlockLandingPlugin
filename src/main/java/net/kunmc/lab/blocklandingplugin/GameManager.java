@@ -35,7 +35,7 @@ public class GameManager extends BukkitRunnable {
 
     private boolean isGaming;
 
-    public boolean getIsGaming(){
+    public boolean getIsGaming() {
         return isGaming;
     }
 

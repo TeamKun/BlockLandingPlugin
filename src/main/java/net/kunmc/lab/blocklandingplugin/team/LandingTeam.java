@@ -47,11 +47,11 @@ public final class LandingTeam {
         return teamName;
     }
 
-    public boolean isFirst(){
+    public boolean isFirst() {
         return isFirst;
     }
 
-    public void setIsFirst(boolean isFirst){
+    public void setIsFirst(boolean isFirst) {
         this.isFirst = isFirst;
     }
 

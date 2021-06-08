@@ -19,7 +19,6 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public final class BlockLandingPlugin extends JavaPlugin {
 
@@ -59,7 +58,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
         FileConfiguration config = getConfig();
         ConfigData configData = ConfigData.getInstance();
         int startY = Integer.parseInt(config.getString(ConfigData.START_Y_STRING));
-        int taskRepeatTime = Integer.parseInt(config.getString(ConfigData.START_Y_STRING));
+        int taskRepeatTime = Integer.parseInt(config.getString(ConfigData.TASK_REPEAT_TIME_STRING));
 
         configData.setStartY(startY);
         configData.setTaskRepeatTime(taskRepeatTime);
@@ -136,8 +135,8 @@ public final class BlockLandingPlugin extends JavaPlugin {
                 completes.add(ConfigData.TASK_REPEAT_TIME_STRING);
             }
 
-            if(GAME_SET.equals(args[0])){
-                if(landingTeamList != null){
+            if (GAME_SET.equals(args[0])) {
+                if (landingTeamList != null) {
                     completes.addAll(landingTeamList.keySet());
                 }
             }
@@ -247,12 +246,12 @@ public final class BlockLandingPlugin extends JavaPlugin {
             sender.sendMessage(GameMessage.ERROR_CANT_START);
         }
         for (Team targetTeam : teams) {
-            LandingTeam landingTeam = new LandingTeam(targetTeam.getEntries().stream().collect(Collectors.toSet()), targetTeam.getName());
+            LandingTeam landingTeam = new LandingTeam(new HashSet<>(targetTeam.getEntries()), targetTeam.getName());
             landingTeamList.put(targetTeam.getName(), landingTeam);
             teamNames.add(targetTeam.getName());
         }
         this.landingTeamList = landingTeamList;
-        sender.sendMessage(GameMessage.getLoadingTeam(teamNames.stream().collect(Collectors.joining("、"))));
+        sender.sendMessage(GameMessage.getLoadingTeam(String.join("、", teamNames)));
         return true;
     }
 
@@ -267,7 +266,7 @@ public final class BlockLandingPlugin extends JavaPlugin {
             if (targetItem == null) {
                 continue;
             }
-            if(!targetItem.getType().isBlock()){
+            if (!targetItem.getType().isBlock()) {
                 continue;
             }
             items.put(i, targetItem);
